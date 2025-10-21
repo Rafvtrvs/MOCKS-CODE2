@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador Avanzado de Productos - Libre & Rico</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e9ecef;
+    padding: 20px;
+}
+.container-main {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+h2 {
+    color: #198754;
+    border-bottom: 2px solid #198754;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: normal; /* Asegurar que no esté en negrita por defecto */
+}
+
+/* Acciones y Filtrado */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+#filtroNombre {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    width: 300px;
+}
+/* Tabla */
+.table-responsive {
+    margin-top: 20px;
+}
+/* Agregamos de vuelta la regla para el fondo y el color de texto de las celdas de datos */
+.table-responsive td { 
+    color: #495057; /* Texto color gris oscuro para legibilidad */
+    font-weight: normal;
+}
+
+/* Encabezados de la tabla (<th>) */
+th {
+    /* ✨ SOLUCIÓN: Agregamos el color de fondo verde */
+    background-color: #198754 !important;
+    color: white !important; 
+    font-weight: normal;
+}
+.acciones-tabla button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+}
+img.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* Modal (Formulario) */
+.modal-body .row > div {
+    margin-bottom: 15px;
+}
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+.is-invalid + .invalid-feedback {
+    display: block;
+}
+
+/* SOBREESCRITURA PARA EL SELECT: ANULAR HOVER/FOCUS AZUL Y REEMPLAZAR POR GRIS */
+.form-select:focus {
+    border-color: #6c757d !important; 
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25) !important; 
+}
+
+.form-select.is-invalid:focus {
+    border-color: #6c757d !important; 
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25) !important; 
+}
+
+.form-select.is-invalid {
+    border-color: #adb5bd !important; 
+    padding-right: 0.75rem !important; 
+    background-image: none !important; 
+}
+</style>
+</head>
+<body>
+
+<div class="container-main">
+    <h2 class = "text-success"><i class="bi bi-gear-fill"></i> Administrador de Productos Avanzado</h2>
+
+    <div class="header-actions text-success">
+        <button class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#productoModal">
+            <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
+        </button>
+        <input type="text" id="filtroNombre" placeholder="Buscar por Nombre o Categoría...">
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-tag-fill"></i> Producto</th>
+                    <th><i class="bi bi-cash-stack"></i> Precio</th>
+                    <th><i class="bi bi-list-task"></i> Categoría</th>
+                    <th><i class="bi bi-image-fill"></i> Imagen</th>
+                    <th><i class="bi bi-tools"></i> Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaProductos">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="productoModalLabel">Gestión de Producto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="nombre" class="form-label">Nombre:</label>
+                            <input type="text" id="nombre" class="form-control" required>
+                            <div class="invalid-feedback" id="feedback-nombre">El nombre es obligatorio.</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="precio" class="form-label">Precio ($):</label>
+                            <input type="number" id="precio" class="form-control" step="1" required>
+                            <div class="invalid-feedback" id="feedback-precio">El precio debe ser un número positivo.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="categoria" class="form-label">Categoría:</label>
+                            <select id="categoria" class="form-select" required>
+                                <option value="" disabled selected>Seleccione categoría</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Postres">Postres</option>
+                                <option value="Panadería">Sandwich</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="imagen" class="form-label">URL Imagen:</label>
+                            <input type="url" id="imagen" class="form-control">
+                            <small class="form-text text-muted">Ej: https://ejemplo.com/foto.jpg</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" id="guardarProducto"><i class="bi bi-save"></i> Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let productos = JSON.parse(localStorage.getItem("productos")) || [];
+let editIndex = null;
+
+// Referencias del DOM
+const productoModal = new bootstrap.Modal(document.getElementById('productoModal'));
+const productForm = document.getElementById("productForm");
+const guardarProductoBtn = document.getElementById("guardarProducto");
+const tablaProductos = document.getElementById("tablaProductos");
+const filtroNombre = document.getElementById("filtroNombre");
+
+// Campos del formulario
+const nombreInput = document.getElementById("nombre");
+const precioInput = document.getElementById("precio");
+const categoriaInput = document.getElementById("categoria");
+const imagenInput = document.getElementById("imagen");
+
+// Formateador de precio para miles (usando el localizador chileno o similar)
+const priceFormatter = new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP', 
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+});
+
+// 1. Renderizado y Filtrado
+function renderTabla(filtro = "") {
+    tablaProductos.innerHTML = "";
+    const filtroLower = filtro.toLowerCase();
+
+    const productosFiltrados = productos.filter(p =>
+        p.nombre.toLowerCase().includes(filtroLower) ||
+        p.categoria.toLowerCase().includes(filtroLower)
+    );
+
+    if (productosFiltrados.length === 0 && productos.length > 0) {
+        tablaProductos.innerHTML = `<tr><td colspan="5" class="text-center text-danger">No se encontraron productos para el filtro: <strong>${filtro}</strong></td></tr>`;
+        return;
+    } else if (productos.length === 0) {
+        tablaProductos.innerHTML = `<tr><td colspan="5" class="text-center" style="color: #495057;">Aún no hay productos agregados.</td></tr>`;
+        return;
+    }
+
+
+    productosFiltrados.forEach((p, index) => {
+        const realIndex = productos.findIndex(prod => prod === p);
+
+        // Formatea el precio y quita el símbolo de moneda para obtener solo los números con puntos
+        const precioFormateado = priceFormatter.format(p.precio).replace('$', '').replace('CLP', '').trim();
+
+        tablaProductos.innerHTML += `
+            <tr>
+                <td>${p.nombre}</td>
+                <td>$${precioFormateado}</td> 
+                <td><span class="badge bg-success">${p.categoria}</span></td>
+                <td>
+                    <img src="${p.imagen || 'https://via.placeholder.com/60/99ccff/333333?text=Sin+Img'}" 
+                         alt="${p.nombre}" 
+                         class="product-thumb" 
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/60/99ccff/333333?text=Sin+Img';">
+                </td>
+                <td class="acciones-tabla">
+                    <button class="btn btn-sm btn-success" onclick="editarProducto(${realIndex})">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${realIndex})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Evento para el filtro
+filtroNombre.addEventListener('keyup', (e) => {
+    renderTabla(e.target.value);
+});
+
+
+// 2. Funciones de Formulario y Validación
+function limpiarFormulario() {
+    productForm.reset();
+    document.querySelectorAll('.form-control, .form-select').forEach(el => {
+        el.classList.remove('is-invalid');
+    });
+}
+
+function validarFormulario() {
+    let esValido = true;
+    const nombre = nombreInput.value.trim();
+    const precio = parseFloat(precioInput.value);
+    const categoria = categoriaInput.value;
+
+    // Validación Nombre
+    if (!nombre) {
+        nombreInput.classList.add('is-invalid');
+        document.getElementById('feedback-nombre').textContent = "El nombre es obligatorio.";
+        esValido = false;
+    } else {
+        nombreInput.classList.remove('is-invalid');
+    }
+
+    // Validación Precio
+    if (isNaN(precio) || precio <= 0) {
+        precioInput.classList.add('is-invalid');
+        document.getElementById('feedback-precio').textContent = "Debe ser un número positivo.";
+        esValido = false;
+    } else {
+        precioInput.classList.remove('is-invalid');
+    }
+    
+    // Validación Categoría (para asegurar que no se envía el valor disabled)
+    if (!categoria) {
+        categoriaInput.classList.add('is-invalid');
+        esValido = false;
+    } else {
+        categoriaInput.classList.remove('is-invalid');
+    }
+
+
+    return esValido;
+}
+
+// 3. Agregar/Editar Producto
+document.getElementById("btnAgregar").addEventListener("click", () => {
+    limpiarFormulario();
+    editIndex = null;
+    document.getElementById('productoModalLabel').textContent = "Agregar Nuevo Producto";
+});
+
+guardarProductoBtn.addEventListener("click", () => {
+    if (!validarFormulario()) {
+        return; // Detener si la validación falla
+    }
+
+    const productoData = {
+        nombre: nombreInput.value.trim(),
+        precio: parseFloat(precioInput.value),
+        categoria: categoriaInput.value,
+        imagen: imagenInput.value.trim()
+    };
+
+    if (editIndex !== null) {
+        // Edición
+        productos[editIndex] = productoData;
+        alert(`Producto "${productoData.nombre}" actualizado con éxito.`);
+    } else {
+        // Nuevo producto
+        productos.push(productoData);
+        alert(`Producto "${productoData.nombre}" agregado con éxito.`);
+    }
+
+    localStorage.setItem("productos", JSON.stringify(productos));
+    productoModal.hide(); // Ocultar el modal
+    renderTabla();
+});
+
+
+// 4. Edición de Producto
+window.editarProducto = function (index) {
+    editIndex = index;
+    const producto = productos[index];
+
+    // Cargar datos en el formulario
+    nombreInput.value = producto.nombre;
+    precioInput.value = producto.precio;
+    categoriaInput.value = producto.categoria;
+    imagenInput.value = producto.imagen || "";
+
+    document.getElementById('productoModalLabel').textContent = "Editar Producto";
+    limpiarFormulario(); // Limpiar validaciones previas
+    productoModal.show(); // Mostrar el modal
+}
+
+// 5. Eliminación de Producto
+window.eliminarProducto = function (index) {
+    const producto = productos[index];
+    if (confirm(`⚠️ ¿Estás seguro de que deseas eliminar el producto "${producto.nombre}"? Esta acción es irreversible.`)) {
+        productos.splice(index, 1);
+        localStorage.setItem("productos", JSON.stringify(productos));
+        alert(`Producto "${producto.nombre}" eliminado.`);
+        renderTabla();
+    }
+}
+
+// Inicialización
+renderTabla();
+</script>
+</body>
+</html>

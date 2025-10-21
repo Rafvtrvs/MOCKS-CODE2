@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libre y Rico - Mis Favoritos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<style>
+    /* Estilos del Sticky Footer */
+    html { height: 100%; }
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f8f9fa; /* Fondo gris claro */
+    }
+    .content-wrapper { flex: 1; }
+    footer { flex-shrink: 0; }
+    
+    /* Estilo para hover en nav (verde #198754) */
+    .nav-link:hover {
+        color: #198754 !important;
+        cursor: pointer;
+    }
+    /* Estilo para los enlaces sociales (quitar subrayado) */
+    .social-icon-link {
+        text-decoration: none !important; 
+    }
+
+    /* Estilo específico para las Cards de producto */
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%; /* Asegura que todas las cards tengan la misma altura */
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+    .btn-favorite {
+        color: #dc3545; /* Rojo de Font Awesome */
+        font-size: 1.25rem;
+        transition: color 0.1s;
+    }
+    /* Icono relleno para indicar que es favorito */
+    .btn-favorite i.fas {
+        color: #dc3545;
+    }
+
+     /* Estilo para el punto de notificación roja del carrito */
+    .cart-notification-dot {
+            /* Diseño del punto */
+            height: 10px;
+            width: 10px;
+            background-color: #dc3545; /* Rojo de Bootstrap (danger) */
+            border-radius: 50%;
+            
+            /* Posicionamiento */
+            position: absolute;
+            top: 3px; /* Ajusta la posición verticalmente */
+            right: 0px; /* Ajusta la posición horizontalmente */
+            border: 1px solid white; /* Borde blanco para que se vea mejor */
+            
+            /* Inicialmente oculto */
+            display: none; 
+   }
+
+        /* Clase para mostrar el punto */
+    .cart-notification-dot.active {
+            display: block;
+    }
+
+        /* El ícono del carrito debe ser el contenedor relativo */
+   .position-relative {
+            position: relative !important;
+   }
+   .nav-link i {
+            transition: all 0.3s ease; /* Transición suave */
+   }
+   .nav-link i:hover {
+            color:#28a745;
+            transform: scale(1.3); 
+            cursor: pointer;
+   }
+   .nav-link:hover {
+            color: #28a745;
+            cursor: pointer;
+   }
+</style>
+<body>
+
+<div class="content-wrapper">
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold fs-3 text-success"  href="Index.html">LIBRE & RICO</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="Index.html">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Productos.html">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Inicio Sesión</a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="Registro.html">Registrate</a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                 <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link text-success" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fas fa-shopping-cart fa-lg position-relative"></i>
+                      <span class="cart-notification-dot" id="cart-notification-badge"></span>
+                    </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown" id="cart-items-container" style="min-width: 300px;">
+                    <li class="dropdown-header text-center">🛒 Carrito de Compras</li>
+                    <div id="cart-products">
+                      <li class="dropdown-item text-muted text-center" id="empty-cart-message">El carrito está vacío.</li>
+                    </div>
+        
+                    <li><hr class="dropdown-divider"></li>
+        
+                    <li class="d-flex justify-content-between p-2 fw-bold bg-light">
+                      <span class = "text-success">Total:</span>
+                      <span id="cart-total" class = "text-success">$0.00</span>
+                    </li>
+                      <li class="p-2">
+                      <a href="Carrito.html" class="btn btn-success w-100">Finalizar Compra</a>
+                    </li>
+                 </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link text-success" href="Perfil.html"><i class="fas fa-user-circle fa-lg"></i></a>
+                </li>
+                <li class = "nav-item">
+                    <a class="nav-link text-success" href="favoritos.html"><i class= "fa-solid fa-heart fa-lg"></i></a> 
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+    <div class="container my-5">
+        <h1 class="text-center mb-5 fw-bold text-success">
+            <i class="fas fa-heart me-2"></i> Mis Productos Favoritos
+        </h1>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4" id="favorites-container"></div>
+    </div>
+    </div> <footer class="bg-success text-white p-4">
+    <div class="container text-center">
+        <p>&copy; 2025 Libre y Rico. Todos los derechos reservados.</p>
+        <div class="mt-3">
+            <h5 class="text-uppercase">Síguenos</h5>
+            <a href="https://www.instagram.com/rafvtrvs" target="_blank" class="text-white mx-2 social-icon-link">
+                <i class="fab fa-instagram fa-lg"></i>
+                <span class="visually-hidden">Instagram</span>
+            </a>
+            <a href="#" target="_blank" class="text-white mx-2 social-icon-link"> 
+                <i class="fab fa-facebook fa-lg"></i>
+                <span class="visually-hidden">Facebook</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Función para obtener la lista de favoritos de localStorage
+    function getFavorites() {
+        const favorites = localStorage.getItem('productFavorites');
+        return favorites ? JSON.parse(favorites) : [];
+    }
+
+    // Función para guardar la lista de favoritos en localStorage
+    function saveFavorites(favoritesArray) {
+        localStorage.setItem('productFavorites', JSON.stringify(favoritesArray));
+    }
+
+    // Función principal para dibujar las cards de favoritos
+    function renderFavorites() {
+        const favoritesContainer = document.getElementById('favorites-container');
+        const favorites = getFavorites();
+        favoritesContainer.innerHTML = ''; // Limpiar el contenedor antes de renderizar
+
+        if (favorites.length === 0) {
+            favoritesContainer.innerHTML = '<div class="col-12"><div class="alert alert-success text-center" role="alert">Aún no tienes productos favoritos. ¡Explora la <a href="Index.html" class="alert-link">página de inicio</a> o <a href="Productos.html" class="alert-link">Productos</a> para añadir algunos!</div></div>';
+            return;
+        }
+
+        favorites.forEach(product => {
+            const cardHTML = `
+                <div class="col" data-product-id="${product.id}">
+                    <div class="card product-card shadow-sm border-0">
+                        <img src="${product.img}" class="card-img-top" alt="${product.name}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">${product.name}</h5>
+                            <p class="card-text text-muted">${product.descript}</p>
+                            <p class="fs-4 text-success mt-auto fw-bold">${product.price}</p> 
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="#" class="btn btn-success btn-add-to-cart"
+                                     data-product-id = "${product.id}"
+                                     data-product-img = "${product.img}"
+                                     data-product-name = "${product.name}"
+                                     data-product-price = ${product.price}>
+                                    <i class="fas fa-cart-plus me-1"></i> Añadir al carrito
+                                </a>
+                                <button class="btn btn-link btn-favorite p-0 btn-remove-favorite" data-product-id="${product.id}" data-product-name="${product.name}">
+                                    <i class="fas fa-heart"></i> </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            favoritesContainer.innerHTML += cardHTML;
+        });
+
+        // Añadir el evento para ELIMINAR favoritos
+        document.querySelectorAll('.btn-remove-favorite').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToRemove = button.dataset.productId;
+                const nameToRemove = button.dataset.productName;
+                
+                // Filtra la lista para eliminar el producto
+                let currentFavorites = getFavorites();
+                const newFavorites = currentFavorites.filter(p => p.id !== idToRemove);
+                
+                // Guardar y re-renderizar
+                saveFavorites(newFavorites);
+                alert(`"${nameToRemove}" eliminado de Favoritos. 💔`);
+                renderFavorites(); // Volver a dibujar la lista sin el producto eliminado
+            });
+        });
+    }
+
+    // Ejecutar al cargar la página
+    document.addEventListener('DOMContentLoaded', renderFavorites);
+
+
+    // --- UTILIDADES DE FORMATO ---
+    /**
+    * Formatea un número entero (ej: 4500) a formato de moneda (ej: $4.500).
+    * @param {string|number} value - El valor numérico.
+    * @returns {string} El valor formateado como moneda CLP (Peso Chileno, sin decimales).
+    */
+    function formatCurrency(value) {
+        const num = parseInt(value); 
+        if (isNaN(num)) return "$0";
+
+        return new Intl.NumberFormat('es-CL', {
+            style: 'currency',
+            currency: 'CLP',
+            minimumFractionDigits: 0
+        }).format(num);
+    }
+
+    // --- Utilidades para Carrito (Persistencia) ---
+    function getCart() {
+        // Obtiene el carrito del localStorage, si no existe, devuelve un array vacío
+        const cart = localStorage.getItem('shoppingCart');
+        return cart ? JSON.parse(cart) : [];
+    }
+
+    function saveCart(cartArray) {
+        localStorage.setItem('shoppingCart', JSON.stringify(cartArray));
+        updateCartDisplay(); // Llama a la función de actualización del UI
+    }
+
+    // --- Actualización de la Interfaz del Carrito (Dropdown) ---
+    function updateCartDisplay() {
+        const cart = getCart();
+        const cartProductsDiv = document.getElementById('cart-products'); // Contenedor de la lista
+        const cartTotalSpan = document.getElementById('cart-total');      // Total final
+        const notificationBadge = document.getElementById('cart-notification-badge'); // Badge de notificación
+
+        // Verificación de existencia de contenedores
+        if (!cartProductsDiv || !cartTotalSpan || !notificationBadge) return;
+        
+        let total = 0; // Se inicializa el total
+
+        // 1. Limpiar la lista actual
+        cartProductsDiv.innerHTML = '';
+
+        // 2. Si hay productos, construir la lista
+        if (cart.length > 0) {
+            cart.forEach(item => {
+                // El valor del precio se limpia eliminando todos los caracteres que NO son dígitos.
+                // Esto es robusto para precios no "limpios" (ej: "$4.500")
+                const cleanedPriceString = item.price.replace(/[^\d]/g, '');
+
+                // Convierte la cadena limpia a un número entero.
+                const priceValue = parseInt(cleanedPriceString);
+                
+                // ** Lógica de cálculo corregida **
+                let subtotal = 0;
+                if (!isNaN(priceValue)) {
+                    subtotal = priceValue * item.quantity;
+                    total += subtotal; // ** IMPORTANTE: Aquí se acumula el total **
+                } else {
+                    console.warn(`Advertencia: Precio inválido para el ítem ${item.name}: ${item.price}`);
+                }
+                // ** Fin de lógica de cálculo corregida **
+                
+                // Crear el elemento de lista del producto
+                const productItem = document.createElement('li');
+                productItem.classList.add('dropdown-item', 'd-flex', 'justify-content-between', 'align-items-center', 'py-2');
+                
+                // Genera el HTML del ítem con CANTIDAD, NOMBRE y PRECIO (subtotal formateado)
+                // Se usa 'subtotal' que ya fue calculado en el bloque anterior
+                productItem.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2">${item.quantity}x</span>
+                        <span class="text-truncate" style="max-width: 150px;">${item.name}</span>
+                    </div>
+                    <span class="ms-auto">${formatCurrency(subtotal)}</span>
+                    <button class="btn btn-sm btn-danger remove-item-btn ms-2" data-product-id="${item.id}">&times;</button>
+                `;
+                cartProductsDiv.appendChild(productItem);
+            });
+            
+            // ACTIVAR EL PUNTO DE NOTIFICACIÓN SI HAY PRODUCTOS
+            notificationBadge.classList.add('active');
+
+        } else {
+            // Mostrar mensaje de carrito vacío
+            cartProductsDiv.innerHTML = '<li class="dropdown-item text-muted text-center" id="empty-cart-message">El carrito está vacío.</li>';
+            
+            // DESACTIVAR EL PUNTO DE NOTIFICACIÓN SI ESTÁ VACÍO
+            notificationBadge.classList.remove('active');
+        }
+
+        // 3. Actualizar el total del dropdown
+        cartTotalSpan.textContent = formatCurrency(total);
+
+        // 4. Configurar eventos para eliminar (para los botones recién creados)
+        document.querySelectorAll('.remove-item-btn').forEach(button => {
+            button.addEventListener('click', removeItemFromCart);
+        });
+    }
+
+    // --- Lógica de Agregar Producto ---
+    function addItemToCart(e) {
+        e.preventDefault();
+        const button = e.currentTarget;
+
+        const id = button.dataset.productId;
+        const img = button.dataset.productImg;
+        const name = button.dataset.productName;
+        const price = button.dataset.productPrice; 
+        
+        let cart = getCart();
+        let existingItem = cart.find(item => item.id === id);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: id,
+                img: img, 
+                name: name,
+                price: price, // Valor numérico limpio
+                quantity: 1
+            });
+        }
+
+        saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
+        
+        // Ya no es necesario forzar el display: 'block' aquí,
+        // porque updateCartDisplay() ahora se encarga de aplicar la clase 'active'
+    }
+
+    // --- Lógica de Eliminar Producto ---
+    function removeItemFromCart(e) {
+        e.stopPropagation();
+        
+        const idToRemove = e.currentTarget.dataset.productId;
+        let cart = getCart();
+
+        const existingItemIndex = cart.findIndex(item => item.id === idToRemove);
+
+        if (existingItemIndex > -1) {
+            let item = cart[existingItemIndex];
+        
+            // 2. Decrementar la cantidad
+            item.quantity -= 1;
+
+            // 3. Si la cantidad es 0 o menos, eliminar el producto del array
+            if (item.quantity <= 0) {
+                cart.splice(existingItemIndex, 1); // Remueve 1 elemento en la posición encontrada
+            }
+        }
+
+        saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
+    }
+
+    // --- Inicialización al cargar la página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Asigna el evento de clic a todos los botones 'Añadir al Carrito'
+        const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', addItemToCart);
+        });
+
+        // Carga y muestra el carrito al inicio (¡Esto ahora gestiona la persistencia del punto!)
+        updateCartDisplay();
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libre y Rico - Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+
+        .body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f8f9fa; /* Fondo gris claro */
+       
+        }
+        /* Estilos básicos para el carrusel y el texto */
+        .carousel-item {
+            height: 60vh; /* Altura para el carrusel */
+            min-height: 500px;
+            background: no-repeat center center scroll; 
+            background-size: cover;
+            background-position: center center;
+        }
+        .carousel-caption {
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente para el texto */
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+       .btn:hover {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: rgb(247, 244, 244) !important;
+            transform: scale(1.05); /* Hace el botón un poco más grande */
+            transition: all 0.3s ease; /* Transición suave */
+        }
+        .btn-danger {
+            background-color: #dc3545; /* Rojo estándar de Bootstrap para 'danger' */
+            border-color: #dc3545;
+            color: white; /* Texto blanco para contrastar */
+        }
+        .btn-danger:hover {
+            background-color: #c82333 !important; /* Rojo más oscuro al hacer hover */
+            border-color: #c82333 !important;
+            color: rgb(247, 244, 244) !important;
+            transform: scale(1.05); /* Mantiene tu efecto de escala */
+            transition: all 0.3s ease;
+        }
+        .btn-success {
+            background-color: #198754 ; /* Verde éxito */
+            border-color: #198754 ;
+            color: white;
+        }
+
+        .nav-link i {
+            transition: all 0.3s ease; /* Transición suave */
+        }
+
+        .nav-link i:hover {
+            color:#28a745;
+            transform: scale(1.3); 
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            color: #28a745;
+            cursor: pointer;
+        }
+        
+
+        .social-icon-link {
+            text-decoration: none !important; 
+        }
+        
+        .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%; /* Asegura que todas las cards tengan la misma altura */
+         }
+         .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+         
+        /* Estilo para el punto de notificación roja del carrito */
+        .cart-notification-dot {
+            /* Diseño del punto */
+            height: 10px;
+            width: 10px;
+            background-color: #dc3545; /* Rojo de Bootstrap (danger) */
+            border-radius: 50%;
+            
+            /* Posicionamiento */
+            position: absolute;
+            top: 3px; /* Ajusta la posición verticalmente */
+            right: 0px; /* Ajusta la posición horizontalmente */
+            border: 1px solid white; /* Borde blanco para que se vea mejor */
+            
+            /* Inicialmente oculto */
+            display: none; 
+        }
+
+        /* Clase para mostrar el punto */
+        .cart-notification-dot.active {
+            display: block;
+        }
+
+        /* El ícono del carrito debe ser el contenedor relativo */
+        .position-relative {
+            position: relative !important;
+        }
+    </style>
+</head>
+<body>
+
+<!--NAVBAR-->
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold fs-3 text-success"  href="Index.html">LIBRE & RICO</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active text-success" aria-current="page" href="Index.html">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Productos.html">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="Registro.html">Registrate</a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
+                </li>
+            </ul>
+              <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link text-success" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fas fa-shopping-cart fa-lg position-relative"></i>
+                      <span class="cart-notification-dot" id="cart-notification-badge"></span>
+                    </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown" id="cart-items-container" style="min-width: 300px;">
+                    <li class="dropdown-header text-center">🛒 Carrito de Compras</li>
+                    <div id="cart-products">
+                      <li class="dropdown-item text-muted text-center" id="empty-cart-message">El carrito está vacío.</li>
+                    </div>
+        
+                    <li><hr class="dropdown-divider"></li>
+        
+                    <li class="d-flex justify-content-between p-2 fw-bold bg-light">
+                      <span class = "text-success">Total:</span>
+                      <span id="cart-total" class = "text-success">$0.00</span>
+                    </li>
+                      <li class="p-2">
+                      <a href="Carrito.html" class="btn btn-success w-100">Finalizar Compra</a>
+                    </li>
+                 </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link text-success" href="Perfil.html"><i class="fas fa-user-circle fa-lg"></i></a>
+                </li>
+                <li class = "nav-item">
+                    <a class="nav-link text-success" href="favoritos.html"><i class= "fa-solid fa-heart fa-lg"></i></a> 
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!--CARROUSEL-->
+    <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators" style = color:black>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active" style="background-image: url('https://tiaclara.com/wp-content/uploads/2023/05/vegan-eggplant-sandwich-DSC3394.jpg');">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
+                    <h2 class="display-3 **text-white**">Sabor sin límites</h2>
+                    <p class="lead">Descubre nuestra nueva línea de productos sin gluten.</p>
+                    <a href="#" class="btn btn-outline-light btn-success mt-3">Ver Ofertas</a>
+                </div>
+            </div>
+            <div class="carousel-item" style="background-image: url('https://www.thespruceeats.com/thmb/0CK65lVOSHILEZXSh1dVJ_Hl4Hc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/how-to-make-caffe-latte-765372-hero-01-2417e49c4a9c4789b3abdd36885f06ab.jpg');">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
+                    <h2 class="display-3 **text-white**">Calidad y bienestar</h2>
+                    <p class="lead **text-white**">Ingredientes frescos y naturales en cada bocado.</p>
+                    <a href="#" class="btn btn-outline-light btn-success mt-3">Conoce Más</a>
+                </div>
+            </div>
+            <div class="carousel-item" style="background-image: url('https://images.cookforyourlife.org/wp-content/uploads/2020/06/Dark-Chocolate-Brownies-shutterstock_112430981.jpg');">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
+                    <h2 class="display-3 **text-white**">Envío a tu puerta</h2>
+                    <p class="lead **text-white**">Recibe tus favoritos donde estés, ¡fácil y rápido!</p>
+                    <a href="#" class="btn btn-outline-light btn-success mt-3">Comprar Ahora</a>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+    </div>
+
+    <!--CONTAINER CON PRODUCTOS DESTACADOS-->
+    <main class="container mt-5">
+        <h2 class="text-center mb-4 text-success" style = "font-weight: 700;" id="productos">Nuestros Productos Destacados</h2>
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 position-relative product-card">
+                    <img src="https://tiaclara.com/wp-content/uploads/2023/05/vegan-eggplant-sandwich-DSC3394.jpg" class="card-img-top" alt="Descripción Producto 1">
+                    <div class="card-body">
+                        <h5 class="card-title">Sandwich Vegano</h5>
+                        <p class="card-text">Bajo en carbohidratos y horneado diariamente.</p>
+                        <a href="#" class="btn btn-success">Ver Detalle</a>
+                        <a href="#" class="btn btn-danger btn-add-favorite"
+                            data-product-id="1"
+                            data-product-name="Sandwich Vegano"
+                            data-product-img="https://tiaclara.com/wp-content/uploads/2023/05/vegan-eggplant-sandwich-DSC3394.jpg"
+                            data-product-descript="Bajo en carbohidratos y horneado diariamente."
+                            data-product-price="4.500$">
+                            <i class = "fa-regular fa-heart"></i> Favoritos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 product-card">
+                    <img src="https://www.thespruceeats.com/thmb/0CK65lVOSHILEZXSh1dVJ_Hl4Hc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/how-to-make-caffe-latte-765372-hero-01-2417e49c4a9c4789b3abdd36885f06ab.jpg" class="card-img-top" alt="Descripción Producto 2">
+                    <div class="card-body">
+                        <h5 class="card-title">Café Latte</h5>
+                        <p class="card-text">Perfecto para iniciar la mañana</p>
+                        <a href="#" class="btn btn-success">Ver Detalle</a>
+                        <a href="#" class="btn btn-danger btn-add-favorite"
+                            data-product-id="2"
+                            data-product-name="Café Latte"
+                            data-product-img="https://www.thespruceeats.com/thmb/0CK65lVOSHILEZXSh1dVJ_Hl4Hc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/how-to-make-caffe-latte-765372-hero-01-2417e49c4a9c4789b3abdd36885f06ab.jpg"
+                            data-product-descript="Perfecto para iniciar la mañana."
+                            data-product-price="2.800$">
+                            <i class = "fa-regular fa-heart"></i> Favoritos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 product-card">
+                    <img src="https://images.cookforyourlife.org/wp-content/uploads/2020/06/Dark-Chocolate-Brownies-shutterstock_112430981.jpg" class="card-img-top" alt="Descripción Producto 3">
+                    <div class="card-body">
+                        <h5 class="card-title">Brownie de Chocolate</h5>
+                        <p class="card-text">Delicioso sabor a Cacao y Almendras.</p>
+                        <a href="#" class="btn btn-success">Ver Detalle</a>
+                          <a href="#" class="btn btn-danger btn-add-favorite"
+                            data-product-id="3"
+                            data-product-name="Brownie Chocolate"
+                            data-product-img="https://images.cookforyourlife.org/wp-content/uploads/2020/06/Dark-Chocolate-Brownies-shutterstock_112430981.jpg"
+                            data-product-descript="Delicioso sabor a Cacao y Almendras."
+                            data-product-price="1.800$">
+                            <i class = "fa-regular fa-heart"></i> Favoritos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<!--FOOTER-->
+   <footer class="bg-success text-white p-4">
+    <div class="container text-center">
+        <p>&copy; 2025 Libre y Rico. Todos los derechos reservados.</p>
+        <div class="mt-3">
+            <h5 class="text-uppercase">Síguenos</h5>
+            <a href="https://www.instagram.com/rafvtrvs" target="_blank" class="text-white mx-2 social-icon-link">
+                <i class="fab fa-instagram fa-lg"></i>
+                <span class="visually-hidden">Instagram</span>
+            </a>
+            <a href="#" target="_blank" class="text-white mx-2 social-icon-link"> 
+                <i class="fab fa-facebook fa-lg"></i>
+                <span class="visually-hidden">Facebook</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+    <!--SCRIPT JAVA FOR TOGGLING, SLIDING AND CLICKING -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+
+<script>
+// Función para obtener la lista de favoritos de localStorage
+    function getFavorites() {
+        // Devuelve un array vacío si no hay favoritos
+        const favorites = localStorage.getItem('productFavorites');
+        return favorites ? JSON.parse(favorites) : [];
+    }
+
+    // Función para guardar la lista de favoritos en localStorage
+    function saveFavorites(favoritesArray) {
+        localStorage.setItem('productFavorites', JSON.stringify(favoritesArray));
+    }
+
+    // Lógica al cargar el DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
+        let favorites = getFavorites();
+
+        // 1. Inicializar el estado de los botones al cargar la página
+        favoriteButtons.forEach(button => {
+            const id = button.dataset.productId;
+            const isFavorite = favorites.some(p => p.id === id);
+            const icon = button.querySelector('i');
+
+            if (isFavorite) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid'); // Corazón relleno si ya está en favoritos
+            }
+        });
+
+
+        // 2. Agregar el evento click a los botones
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault(); // Previene la acción por defecto del enlace
+
+                const id = button.dataset.productId;
+                const name = button.dataset.productName;
+                const img = button.dataset.productImg;
+                const price = button.dataset.productPrice;
+                const descript = button.dataset.productDescript;
+                const icon = button.querySelector('i');
+
+                // Recargar la lista de favoritos (importante por si cambia en otra pestaña)
+                favorites = getFavorites(); 
+                const isFavorite = favorites.some(p => p.id === id);
+
+                if (isFavorite) {
+                    // Eliminar de favoritos
+                    favorites = favorites.filter(p => p.id !== id);
+                    icon.classList.remove('fa-solid');
+                    icon.classList.add('fa-regular');
+                    alert(`"${name}" eliminado de Favoritos. 💔`);
+                } else {
+                    // Agregar a favoritos
+                    const newFavorite = { id, name, img, price, descript};
+                    favorites.push(newFavorite);
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                    alert(`"${name}" agregado a Favoritos. ❤️`);
+                }
+
+                // Guardar la nueva lista
+                saveFavorites(favorites);
+            });
+        });
+    });
+    
+     // --- UTILIDADES DE FORMATO ---
+    /**
+    * Formatea un número entero (ej: 4500) a formato de moneda (ej: $4.500).
+    * @param {string|number} value - El valor numérico.
+    * @returns {string} El valor formateado como moneda CLP (Peso Chileno, sin decimales).
+    */
+    function formatCurrency(value) {
+        const num = parseInt(value); 
+        if (isNaN(num)) return "$0";
+
+        return new Intl.NumberFormat('es-CL', {
+            style: 'currency',
+            currency: 'CLP',
+            minimumFractionDigits: 0
+        }).format(num);
+    }
+
+    // --- Utilidades para Carrito (Persistencia) ---
+    function getCart() {
+        // Obtiene el carrito del localStorage, si no existe, devuelve un array vacío
+        const cart = localStorage.getItem('shoppingCart');
+        return cart ? JSON.parse(cart) : [];
+    }
+
+    function saveCart(cartArray) {
+        localStorage.setItem('shoppingCart', JSON.stringify(cartArray));
+        updateCartDisplay(); // Llama a la función de actualización del UI
+    }
+
+    // --- Actualización de la Interfaz del Carrito (Dropdown) ---
+    function updateCartDisplay() {
+        const cart = getCart();
+        const cartProductsDiv = document.getElementById('cart-products'); // Contenedor de la lista
+        const cartTotalSpan = document.getElementById('cart-total');      // Total final
+        const notificationBadge = document.getElementById('cart-notification-badge'); // ¡NUEVO: Obtener el badge!
+
+        // Verificación de existencia de contenedores
+        if (!cartProductsDiv || !cartTotalSpan || !notificationBadge) return;
+        
+        let total = 0;
+
+        // 1. Limpiar la lista actual
+        cartProductsDiv.innerHTML = '';
+
+        // 2. Si hay productos, construir la lista
+        if (cart.length > 0) {
+            cart.forEach(item => {
+                // El precio DEBE ser un número limpio (ej: "4500")
+                const priceValue = parseInt(item.price);
+                const subtotal = priceValue * item.quantity;
+                total += subtotal;
+
+                // Crear el elemento de lista del producto
+                const productItem = document.createElement('li');
+                productItem.classList.add('dropdown-item', 'd-flex', 'justify-content-between', 'align-items-center', 'py-2');
+                
+                // Genera el HTML del ítem con CANTIDAD (item.quantity), NOMBRE (item.name) y PRECIO (subtotal formateado)
+                productItem.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2">${item.quantity}x</span>
+                        <span class="text-truncate" style="max-width: 150px;">${item.name}</span>
+                    </div>
+                    <span class = "ms-auto">${formatCurrency(subtotal)}</span>
+                    <button class="btn btn-sm btn-danger remove-item-btn ms-2" data-product-id="${item.id}">&times;</button>
+                `;
+                cartProductsDiv.appendChild(productItem);
+            });
+            
+            // ACTIVAR EL PUNTO DE NOTIFICACIÓN SI HAY PRODUCTOS
+            notificationBadge.classList.add('active');
+
+        } else {
+            // Mostrar mensaje de carrito vacío
+            cartProductsDiv.innerHTML = '<li class="dropdown-item text-muted text-center" id="empty-cart-message">El carrito está vacío.</li>';
+            
+            // DESACTIVAR EL PUNTO DE NOTIFICACIÓN SI ESTÁ VACÍO
+            notificationBadge.classList.remove('active');
+        }
+
+        // 3. Actualizar el total del dropdown
+        cartTotalSpan.textContent = formatCurrency(total);
+
+        // 4. Configurar eventos para eliminar (para los botones recién creados)
+        document.querySelectorAll('.remove-item-btn').forEach(button => {
+            button.addEventListener('click', removeItemFromCart);
+        });
+    }
+
+    // --- Lógica de Agregar Producto ---
+    function addItemToCart(e) {
+        e.preventDefault();
+        const button = e.currentTarget;
+
+        const id = button.dataset.productId;
+        const img = button.dataset.productImg;
+        const name = button.dataset.productName;
+        const price = button.dataset.productPrice; 
+        
+        let cart = getCart();
+        let existingItem = cart.find(item => item.id === id);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: id,
+                img: img, 
+                name: name,
+                price: price, // Valor numérico limpio
+                quantity: 1
+            });
+        }
+
+        saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
+        
+        // Ya no es necesario forzar el display: 'block' aquí,
+        // porque updateCartDisplay() ahora se encarga de aplicar la clase 'active'
+    }
+
+    // --- Lógica de Eliminar Producto ---
+    function removeItemFromCart(e) {
+        e.stopPropagation();
+        
+        const idToRemove = e.currentTarget.dataset.productId;
+        let cart = getCart();
+
+        const existingItemIndex = cart.findIndex(item => item.id === idToRemove);
+
+        if (existingItemIndex > -1) {
+            let item = cart[existingItemIndex];
+        
+            // 2. Decrementar la cantidad
+            item.quantity -= 1;
+
+            // 3. Si la cantidad es 0 o menos, eliminar el producto del array
+            if (item.quantity <= 0) {
+                cart.splice(existingItemIndex, 1); // Remueve 1 elemento en la posición encontrada
+            }
+        }
+
+        saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
+    }
+
+    // --- Inicialización al cargar la página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Asigna el evento de clic a todos los botones 'Añadir al Carrito'
+        const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', addItemToCart);
+        });
+
+        // Carga y muestra el carrito al inicio (¡Esto ahora gestiona la persistencia del punto!)
+        updateCartDisplay();
+    });
+
+
+</script>
+
+</body>
+</html>
