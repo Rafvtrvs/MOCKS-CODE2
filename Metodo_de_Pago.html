@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Método de Pago</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .payment-card {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .icon-card {
+            font-size: 1.5rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="payment-card">
+        <h2 class="text-center mb-4 text-success"><i class="fas fa-credit-card me-2"></i> Añadir Método de Pago</h2>
+        
+        <form id="paymentForm">
+            <div class="mb-4">
+                <label class="form-label fw-bold">Selecciona el método:</label>
+                <div class="d-flex justify-content-around">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cardRadio" value="card" checked>
+                        <label class="form-check-label" for="cardRadio">
+                            <i class="fas fa-credit-card icon-card"></i> Tarjeta
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="transferRadio" value="transfer">
+                        <label class="form-check-label" for="transferRadio">
+                            <i class="fas fa-university icon-card"></i> Transferencia
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cardFields">
+                <div class="mb-3">
+                    <label for="cardNumber" class="form-label">Número de Tarjeta</label>
+                    <input type="text" class="form-control" id="cardNumber" placeholder="XXXX XXXX XXXX XXXX" required maxlength="19">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="cardName" class="form-label">Nombre en la Tarjeta</label>
+                    <input type="text" class="form-control" id="cardName" placeholder="Como aparece en la tarjeta" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="cardExpiry" class="form-label">Vencimiento</label>
+                        <input type="text" class="form-control" id="cardExpiry" placeholder="MM/AA" required maxlength="5">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label for="cardCVC" class="form-label">CVV</label>
+                        <input type="text" class="form-control" id="cardCVC" placeholder="XXX" required maxlength="4">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="transferFields" style="display:none;">
+                <p class="alert alert-info">Al seleccionar transferencia, se te proporcionarán los datos bancarios al finalizar la compra.</p>
+                <div class="mb-3">
+                    <label for="transferAlias" class="form-label">Alias de la Cuenta</label>
+                    <input type="text" class="form-control" id="transferAlias" placeholder="Mi cuenta principal">
+                    <div class="form-text">Este es solo un nombre de referencia.</div>
+                </div>
+            </div>
+
+            <hr>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success btn-lg" href = "Metodo_de_Pago.html">Guardar Método de Pago</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 1. Obtener elementos
+    const cardRadio = document.getElementById('cardRadio');
+    const transferRadio = document.getElementById('transferRadio');
+    const cardFields = document.getElementById('cardFields');
+    const transferFields = document.getElementById('transferFields');
+    const paymentForm = document.getElementById('paymentForm');
+
+    // 2. Función para mostrar/ocultar campos
+    function togglePaymentFields() {
+        if (cardRadio.checked) {
+            cardFields.style.display = 'block';
+            transferFields.style.display = 'none';
+        } else if (transferRadio.checked) {
+            cardFields.style.display = 'none';
+            transferFields.style.display = 'block';
+        }
+    }
+
+    // 3. Agregar listeners para cambiar la vista
+    cardRadio.addEventListener('change', togglePaymentFields);
+    transferRadio.addEventListener('change', togglePaymentFields);
+
+    // 4. (Opcional) Simular el envío del formulario
+    paymentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        let method = document.querySelector('input[name="paymentMethod"]:checked').value;
+        let message = '';
+
+        if (method === 'card') {
+            const lastFour = document.getElementById('cardNumber').value.slice(-4);
+            message = `Tarjeta terminada en ${lastFour} de ${document.getElementById('cardName').value} ha sido guardada con éxito.`;
+        } else if (method === 'transfer') {
+            message = `El método de Transferencia Bancaria (${document.getElementById('transferAlias').value}) ha sido guardado.`;
+        }
+
+        alert('¡Método Guardado! \n' + message);
+        paymentForm.reset();
+        togglePaymentFields(); // Asegura que la vista se restablezca correctamente
+    });
+    
+    // 5. (Opcional) Formatear el campo de tarjeta para agregar espacios (UX)
+    document.getElementById('cardNumber').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s/g, ''); // Eliminar espacios existentes
+        let formattedValue = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formattedValue += ' ';
+            }
+            formattedValue += value[i];
+        }
+        e.target.value = formattedValue;
+    });
+
+</script>
+</body>
+</html>
