@@ -107,16 +107,16 @@
                 <li class="nav-item">
                     <a class="nav-link" href="Productos.html">Productos</a>
                 </li>
-                <li class="nav-item" id="nav-inicio-sesion">
+                <li class="nav-item">
                     <a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a>
                 </li>
-                 <li class="nav-item" id="nav-registro">
+                 <li class="nav-item">
                     <a class="nav-link" href="Registro.html">Registrate</a>
                 </li>
-                 <li class="nav-item" id="nav-portal-empleados" style="display: none;">
+                 <li class="nav-item">
                     <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
                 </li>
-                 <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
+                 <li class="nav-item">
                     <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
 
@@ -163,17 +163,9 @@
         
         <div class="profile-container">
             <div class="row">
-                <div class="col-md-3 col-sm-12 d-flex flex-column align-items-center justify-content-md-start mb-4 mb-md-0">
-                    <div class="position-relative">
-                        <img id="profile-img" src="https://c.files.bbci.co.uk/48DD/production/_107435681_perro1.jpg" 
-                             class="profile-img" alt="Foto de Perfil">
-                        <button class="btn btn-sm btn-success position-absolute bottom-0 end-0 rounded-circle" 
-                                style="width: 40px; height: 40px; border: 2px solid white;"
-                                onclick="mostrarModalEditar()" 
-                                title="Editar foto de perfil">
-                            <i class="fas fa-camera"></i>
-                        </button>
-                    </div>
+                <div class="col-md-3 col-sm-12 d-flex justify-content-center justify-content-md-start mb-4 mb-md-0">
+                    <img src="https://c.files.bbci.co.uk/48DD/production/_107435681_perro1.jpg" 
+                         class="profile-img" alt="Foto de Perfil">
                 </div>
                 
                 <div class="col-md-9 col-sm-12">
@@ -193,113 +185,13 @@
                         <div class="profile-detail">
                             <i class="fas fa-id-badge"></i>
                             Usuario: <strong id="profile-username">jr_perez_2025</strong>
-                            <button class="btn btn-sm btn-outline-success ms-2" onclick="editarNombreUsuario()" title="Editar nombre de usuario">
-                                <i class="fas fa-edit"></i>
-                            </button>
                         </div>
 
                     </div>
                     
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="Metodo_de_Pago.html" class="btn btn-success btn-lg shadow-sm">
-                            <i class="fas fa-wallet me-2"></i> Añadir Medios de Pago
-                        </a>
-                        <button class="btn btn-outline-success btn-lg shadow-sm" onclick="abrirModalCambiarContrasena()">
-                            <i class="fas fa-key me-2"></i> Cambiar Contraseña
-                        </button>
-                        <button class="btn btn-danger btn-lg shadow-sm" onclick="cerrarSesion()">
-                            <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal para editar foto de perfil -->
-        <div class="modal fade" id="modalEditarFoto" tabindex="-1" aria-labelledby="modalEditarFotoLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalEditarFotoLabel">Editar Foto de Perfil</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="inputFotoPerfil" class="form-label">URL de la imagen de perfil</label>
-                            <input type="url" class="form-control" id="inputFotoPerfil" 
-                                   placeholder="https://ejemplo.com/imagen.jpg">
-                            <div class="form-text">Ingresa la URL de una imagen en internet</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Vista previa:</label>
-                            <div class="text-center">
-                                <img id="previewFotoPerfil" src="" alt="Vista previa" 
-                                     class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #198754;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-success" onclick="guardarFotoPerfil()">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal para cambiar contraseña -->
-        <div class="modal fade" id="modalCambiarContrasena" tabindex="-1" aria-labelledby="modalCambiarContrasenaLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalCambiarContrasenaLabel">Cambiar Contraseña</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="passwordActual" class="form-label">Contraseña actual</label>
-                            <input type="password" class="form-control" id="passwordActual" placeholder="Ingresa tu contraseña actual">
-                            <div id="errorPasswordActual" class="text-danger mt-1" style="display:none;"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="passwordNueva" class="form-label">Nueva contraseña</label>
-                            <input type="password" class="form-control" id="passwordNueva" placeholder="Mínimo 8 caracteres, 1 mayúscula, 1 dígito">
-                            <div class="form-text">Debe tener al menos 8 caracteres, una mayúscula y un dígito.</div>
-                            <div id="errorPasswordNueva" class="text-danger mt-1" style="display:none;"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="passwordConfirm" class="form-label">Confirmar nueva contraseña</label>
-                            <input type="password" class="form-control" id="passwordConfirm" placeholder="Repite la nueva contraseña">
-                            <div id="errorPasswordConfirm" class="text-danger mt-1" style="display:none;"></div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-success" onclick="guardarNuevaContrasena()">Guardar Cambios</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal para editar nombre de usuario -->
-        <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalEditarUsuarioLabel">Editar Nombre de Usuario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="inputNombreUsuario" class="form-label">Nombre de Usuario</label>
-                            <input type="text" class="form-control" id="inputNombreUsuario" 
-                                   placeholder="ejemplo: juan_perez_2025">
-                            <div class="form-text">Solo letras, números y guiones bajos</div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-success" onclick="guardarNombreUsuario()">Guardar</button>
-                    </div>
+                    <a href="Metodo_de_Pago.html" class="btn btn-success btn-lg shadow-sm">
+                        <i class="fas fa-wallet me-2"></i> Añadir Medios de Pago
+                    </a>
                 </div>
             </div>
         </div>
@@ -331,708 +223,72 @@
 
 
 <script>
-// ========================================
-// SISTEMA DE USUARIOS Y PERFIL
-// ========================================
+// Función para obtener la lista de favoritos de localStorage
+    function getFavorites() {
+        // Devuelve un array vacío si no hay favoritos
+        const favorites = localStorage.getItem('productFavorites');
+        return favorites ? JSON.parse(favorites) : [];
+    }
 
-let usuarioActual = null;
-let favoritosGlobal = [];
+    // Función para guardar la lista de favoritos en localStorage
+    function saveFavorites(favoritesArray) {
+        localStorage.setItem('productFavorites', JSON.stringify(favoritesArray));
+    }
 
-// Cargar datos del usuario desde MongoDB
-async function cargarPerfilUsuario() {
-    try {
-        // Obtener email del usuario desde localStorage
-        let usuarioEmail = localStorage.getItem("usuarioEmail");
-        
-        // Si no hay usuarioEmail, intentar obtener desde el objeto usuario
-        if (!usuarioEmail) {
-            const usuarioLocal = localStorage.getItem("usuario");
-            if (usuarioLocal) {
-                try {
-                    // Intentar parsear como JSON
-                    const usuarioObj = JSON.parse(usuarioLocal);
-                    // Verificar si es un objeto con correo
-                    if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
-                        usuarioEmail = usuarioObj.correo;
-                    } else if (typeof usuarioObj === 'string') {
-                        // Si el parse devuelve un string, podría ser un email directo
-                        usuarioEmail = usuarioObj;
-                    }
-                } catch (e) {
-                    // Si no es JSON válido, podría ser un email directo
-                    console.log("No es JSON válido, intentando como email directo");
-                    // Verificar si parece un email
-                    if (usuarioLocal.includes("@")) {
-                        usuarioEmail = usuarioLocal;
-                    } else {
-                        console.error("Error al parsear usuario:", e);
-                    }
-                }
-                
-                // Si encontramos el email, guardarlo también
-                if (usuarioEmail) {
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
+    // Lógica al cargar el DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
+        let favorites = getFavorites();
+
+        // 1. Inicializar el estado de los botones al cargar la página
+        favoriteButtons.forEach(button => {
+            const id = button.dataset.productId;
+            const isFavorite = favorites.some(p => p.id === id);
+            const icon = button.querySelector('i');
+
+            if (isFavorite) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid'); // Corazón relleno si ya está en favoritos
             }
-        }
-        
-        if (!usuarioEmail) {
-            console.log("No hay usuario logueado");
-            mostrarMensajeNoLogueado();
-            return;
-        }
-
-        console.log("Cargando perfil para:", usuarioEmail);
-        
-        // Intentar cargar desde MongoDB
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/usuarios/perfil/${encodeURIComponent(usuarioEmail)}`);
-            
-            if (response.ok) {
-                usuarioActual = await response.json();
-                console.log("Perfil cargado desde MongoDB:", usuarioActual);
-                actualizarDatosPerfil();
-                return;
-            } else if (response.status === 404) {
-                console.log("Usuario no encontrado en MongoDB");
-                // Intentar cargar desde localStorage
-            } else {
-                console.error("Error HTTP:", response.status);
-                // Intentar cargar desde localStorage
-            }
-        } catch (fetchError) {
-            console.error("Error al conectar con el backend:", fetchError);
-            // Intentar cargar desde localStorage como fallback
-        }
-        
-        // Fallback: cargar desde localStorage solo si tenemos email
-        if (usuarioEmail) {
-            const usuarioLocal = localStorage.getItem("usuario");
-            if (usuarioLocal) {
-                try {
-                    // Intentar parsear como JSON
-                    const parsed = JSON.parse(usuarioLocal);
-                    
-                    // Verificar si es un objeto válido
-                    if (parsed && typeof parsed === 'object' && parsed.correo) {
-                        usuarioActual = parsed;
-                        console.log("Perfil cargado desde localStorage:", usuarioActual);
-                        actualizarDatosPerfil();
-                        return; // Salir si se cargó correctamente
-                    }
-                } catch (e) {
-                    // Si no es JSON válido, limpiar el valor inválido
-                    console.log("Valor inválido en localStorage, limpiando...");
-                    localStorage.removeItem("usuario");
-                }
-            }
-            
-            // Si no se pudo cargar desde localStorage pero tenemos email, crear objeto básico
-            if (!usuarioActual && usuarioEmail.includes("@")) {
-                usuarioActual = {
-                    correo: usuarioEmail,
-                    nombres: "",
-                    apellidos: "",
-                    usuario: usuarioEmail.split("@")[0]
-                };
-                console.log("Perfil básico creado desde email:", usuarioActual);
-                actualizarDatosPerfil();
-            } else if (!usuarioActual) {
-                mostrarMensajeNoLogueado();
-            }
-        } else {
-            mostrarMensajeNoLogueado();
-        }
-    } catch (error) {
-        console.error("Error general al cargar perfil:", error);
-        mostrarMensajeNoLogueado();
-    }
-}
-
-// Actualizar los datos del perfil en la página
-function actualizarDatosPerfil() {
-    if (!usuarioActual) {
-        console.log("No hay usuario actual para actualizar");
-        return;
-    }
-    
-    console.log("Actualizando datos del perfil con:", usuarioActual);
-    
-    // Actualizar nombre completo
-    const nombreCompleto = `${usuarioActual.nombres || ""} ${usuarioActual.apellidos || ""}`.trim();
-    const profileName = document.getElementById("profile-name");
-    if (profileName) {
-        profileName.textContent = nombreCompleto || "Usuario";
-        console.log("Nombre actualizado:", nombreCompleto);
-    } else {
-        console.error("No se encontró el elemento profile-name");
-    }
-    
-    // Actualizar correo
-    const profileEmail = document.getElementById("profile-email");
-    if (profileEmail) {
-        profileEmail.textContent = usuarioActual.correo || "";
-        console.log("Correo actualizado:", usuarioActual.correo);
-    } else {
-        console.error("No se encontró el elemento profile-email");
-    }
-    
-    // Actualizar usuario
-    const profileUsername = document.getElementById("profile-username");
-    if (profileUsername) {
-        const username = usuarioActual.usuario || usuarioActual.correo || "";
-        profileUsername.textContent = username;
-        console.log("Usuario actualizado:", username);
-    } else {
-        console.error("No se encontró el elemento profile-username");
-    }
-    
-    // Actualizar imagen de perfil
-    const profileImg = document.getElementById("profile-img");
-    if (profileImg) {
-        const imagenPerfil = usuarioActual.imagen_perfil || "https://c.files.bbci.co.uk/48DD/production/_107435681_perro1.jpg";
-        profileImg.src = imagenPerfil;
-        console.log("Imagen de perfil actualizada:", imagenPerfil);
-    }
-    
-    // Asegurar que el contenedor del perfil sea visible
-    const profileContainer = document.querySelector(".profile-container");
-    if (profileContainer) {
-        profileContainer.style.display = "block";
-    }
-}
-
-// Mostrar modal para editar foto de perfil
-function mostrarModalEditar() {
-    if (!usuarioActual) {
-        alert("Por favor, inicia sesión primero");
-        return;
-    }
-    
-    const modalElement = document.getElementById('modalEditarFoto');
-    const modal = new bootstrap.Modal(modalElement);
-    const inputFoto = document.getElementById('inputFotoPerfil');
-    const preview = document.getElementById('previewFotoPerfil');
-    
-    // Cargar imagen actual si existe
-    const imagenActual = usuarioActual.imagen_perfil || "";
-    inputFoto.value = imagenActual;
-    preview.src = imagenActual || "https://c.files.bbci.co.uk/48DD/production/_107435681_perro1.jpg";
-    
-    // Actualizar preview cuando cambie la URL (remover listener anterior si existe)
-    const inputHandler = function() {
-        const url = inputFoto.value.trim();
-        preview.src = url || "https://c.files.bbci.co.uk/48DD/production/_107435681_perro1.jpg";
-    };
-    
-    // Remover listener anterior si existe
-    inputFoto.removeEventListener('input', inputHandler);
-    // Agregar nuevo listener
-    inputFoto.addEventListener('input', inputHandler);
-    
-    modal.show();
-}
-
-// Guardar foto de perfil
-async function guardarFotoPerfil() {
-    if (!usuarioActual) {
-        alert("Por favor, inicia sesión primero");
-        return;
-    }
-    
-    const inputFoto = document.getElementById('inputFotoPerfil');
-    const nuevaImagen = inputFoto.value.trim();
-    
-    if (!nuevaImagen) {
-        alert("Por favor, ingresa una URL de imagen válida");
-        return;
-    }
-    
-    const usuarioEmail = localStorage.getItem("usuarioEmail") || usuarioActual.correo;
-    
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/usuarios/perfil/${encodeURIComponent(usuarioEmail)}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                imagen_perfil: nuevaImagen
-            })
         });
-        
-        if (response.ok) {
-            const result = await response.json();
-            console.log("Foto de perfil actualizada:", result);
-            
-            // Actualizar usuario actual
-            usuarioActual.imagen_perfil = nuevaImagen;
-            
-            // Actualizar localStorage
-            localStorage.setItem("usuario", JSON.stringify(result.usuario));
-            
-            // Actualizar la imagen en la página
-            actualizarDatosPerfil();
-            
-            // Cerrar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarFoto'));
-            modal.hide();
-            
-            alert("Foto de perfil actualizada exitosamente ✅");
-        } else {
-            const errorData = await response.json();
-            alert(errorData.detail || "Error al actualizar la foto de perfil ❌");
-        }
-    } catch (error) {
-        console.error("Error al actualizar foto de perfil:", error);
-        alert("Error al actualizar la foto de perfil. Verifica que el backend esté corriendo.");
-    }
-}
 
-// Editar nombre de usuario
-function editarNombreUsuario() {
-    if (!usuarioActual) {
-        alert("Por favor, inicia sesión primero");
-        return;
-    }
-    
-    const modal = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
-    const inputUsuario = document.getElementById('inputNombreUsuario');
-    
-    // Cargar nombre de usuario actual
-    inputUsuario.value = usuarioActual.usuario || "";
-    
-    modal.show();
-}
 
-// Guardar nombre de usuario
-async function guardarNombreUsuario() {
-    if (!usuarioActual) {
-        alert("Por favor, inicia sesión primero");
-        return;
-    }
-    
-    const inputUsuario = document.getElementById('inputNombreUsuario');
-    const nuevoUsuario = inputUsuario.value.trim();
-    
-    if (!nuevoUsuario) {
-        alert("Por favor, ingresa un nombre de usuario válido");
-        return;
-    }
-    
-    // Validar formato (solo letras, números y guiones bajos)
-    if (!/^[a-zA-Z0-9_]+$/.test(nuevoUsuario)) {
-        alert("El nombre de usuario solo puede contener letras, números y guiones bajos");
-        return;
-    }
-    
-    const usuarioEmail = localStorage.getItem("usuarioEmail") || usuarioActual.correo;
-    
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/usuarios/perfil/${encodeURIComponent(usuarioEmail)}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                usuario: nuevoUsuario
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            console.log("Nombre de usuario actualizado:", result);
-            
-            // Actualizar usuario actual
-            usuarioActual.usuario = nuevoUsuario;
-            
-            // Actualizar localStorage
-            localStorage.setItem("usuario", JSON.stringify(result.usuario));
-            
-            // Actualizar el nombre de usuario en la página
-            actualizarDatosPerfil();
-            
-            // Cerrar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario'));
-            modal.hide();
-            
-            alert("Nombre de usuario actualizado exitosamente ✅");
-        } else {
-            const errorData = await response.json();
-            alert(errorData.detail || "Error al actualizar el nombre de usuario ❌");
-        }
-    } catch (error) {
-        console.error("Error al actualizar nombre de usuario:", error);
-        alert("Error al actualizar el nombre de usuario. Verifica que el backend esté corriendo.");
-    }
-}
+        // 2. Agregar el evento click a los botones
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault(); // Previene la acción por defecto del enlace
 
-// Mostrar mensaje cuando no hay usuario logueado
-function mostrarMensajeNoLogueado() {
-    const profileContainer = document.querySelector(".profile-container");
-    if (profileContainer) {
-        profileContainer.innerHTML = `
-            <div class="alert alert-warning text-center" role="alert">
-                <h4><i class="fas fa-exclamation-triangle me-2"></i>No has iniciado sesión</h4>
-                <p>Por favor, inicia sesión para ver tu perfil.</p>
-                <a href="Inicio_Sesion.html" class="btn btn-success mt-3">Iniciar Sesión</a>
-            </div>
-        `;
-    }
-}
+                const id = button.dataset.productId;
+                const name = button.dataset.productName;
+                const img = button.dataset.productImg;
+                const price = button.dataset.productPrice;
+                const descript = button.dataset.productDescript;
+                const icon = button.querySelector('i');
 
-// Función auxiliar para obtener el email del usuario
-function obtenerUsuarioEmail() {
-    let usuarioEmail = localStorage.getItem("usuarioEmail");
-    
-    if (!usuarioEmail) {
-        const usuarioLocal = localStorage.getItem("usuario");
-        if (usuarioLocal) {
-            try {
-                const usuarioObj = JSON.parse(usuarioLocal);
-                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
-                    usuarioEmail = usuarioObj.correo;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            } catch (e) {
-                if (usuarioLocal.includes("@")) {
-                    usuarioEmail = usuarioLocal;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            }
-        }
-    }
-    
-    return usuarioEmail;
-}
+                // Recargar la lista de favoritos (importante por si cambia en otra pestaña)
+                favorites = getFavorites(); 
+                const isFavorite = favorites.some(p => p.id === id);
 
-// Cargar favoritos desde MongoDB
-async function cargarFavoritos() {
-    try {
-        const usuarioEmail = obtenerUsuarioEmail();
-        const url = usuarioEmail 
-            ? `http://127.0.0.1:8000/favoritos?usuario_email=${encodeURIComponent(usuarioEmail)}`
-            : "http://127.0.0.1:8000/favoritos";
-        
-        const response = await fetch(url);
-        favoritosGlobal = await response.json();
-        console.log("Favoritos cargados:", favoritosGlobal);
-        actualizarEstadoBotonesFavoritos();
-    } catch (error) {
-        console.error("Error al cargar favoritos:", error);
-        // Si hay error, inicializar como array vacío
-        favoritosGlobal = [];
-    }
-}
-
-// Verificar si un producto está en favoritos (por nombre)
-function estaEnFavoritos(nombre) {
-    return favoritosGlobal.some(f => f.nombre === nombre);
-}
-
-// Convertir precio de formato string (ej: "4.500$") a número
-function convertirPrecio(precioStr) {
-    // Remover "$" y puntos, luego convertir a número
-    const precioNum = parseInt(precioStr.replace(/[$.]/g, ''));
-    return isNaN(precioNum) ? 0 : precioNum;
-}
-
-// Actualizar el estado visual de los botones de favoritos
-function actualizarEstadoBotonesFavoritos() {
-    const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
-    favoriteButtons.forEach(button => {
-        const nombre = button.dataset.productName;
-        const icon = button.querySelector('i');
-        
-        if (estaEnFavoritos(nombre)) {
-            icon.classList.remove('fa-regular');
-            icon.classList.add('fa-solid'); // Corazón relleno si ya está en favoritos
-        } else {
-            icon.classList.remove('fa-solid');
-            icon.classList.add('fa-regular');
-        }
-    });
-}
-
-// Toggle favorito (agregar o eliminar)
-async function toggleFavorito(button) {
-    const id = button.dataset.productId;
-    const nombre = button.dataset.productName;
-    const img = button.dataset.productImg;
-    const priceStr = button.dataset.productPrice;
-    const descript = button.dataset.productDescript;
-    const icon = button.querySelector('i');
-    
-    // Convertir precio a número
-    const precio = convertirPrecio(priceStr);
-    
-    const esFavorito = estaEnFavoritos(nombre);
-    
-    if (esFavorito) {
-        // Eliminar de favoritos
-        const favoritoId = favoritosGlobal.find(f => f.nombre === nombre)?._id;
-        if (favoritoId) {
-            try {
-                const usuarioEmail = obtenerUsuarioEmail();
-                const url = usuarioEmail 
-                    ? `http://127.0.0.1:8000/favoritos/${favoritoId}?usuario_email=${encodeURIComponent(usuarioEmail)}`
-                    : `http://127.0.0.1:8000/favoritos/${favoritoId}`;
-                
-                const response = await fetch(url, {
-                    method: "DELETE"
-                });
-
-                if (response.ok) {
-                    favoritosGlobal = favoritosGlobal.filter(f => f._id !== favoritoId);
+                if (isFavorite) {
+                    // Eliminar de favoritos
+                    favorites = favorites.filter(p => p.id !== id);
                     icon.classList.remove('fa-solid');
                     icon.classList.add('fa-regular');
-                    alert(`"${nombre}" eliminado de Favoritos. 💔`);
+                    alert(`"${name}" eliminado de Favoritos. 💔`);
                 } else {
-                    alert("Error al eliminar de favoritos ❌");
+                    // Agregar a favoritos
+                    const newFavorite = { id, name, img, price, descript};
+                    favorites.push(newFavorite);
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                    alert(`"${name}" agregado a Favoritos. ❤️`);
                 }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Error al eliminar de favoritos");
-            }
-        }
-    } else {
-        // Agregar a favoritos
-        try {
-            const usuarioEmail = obtenerUsuarioEmail();
-            if (!usuarioEmail) {
-                alert("Por favor, inicia sesión para agregar favoritos");
-                return;
-            }
-            
-            const response = await fetch("http://127.0.0.1:8000/favoritos", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    nombre, 
-                    precio, 
-                    categoria: "Destacado", // Valor por defecto
-                    imagen: img,
-                    estado: "Disponible", // Valor por defecto
-                    usuario_email: usuarioEmail
-                })
+
+                // Guardar la nueva lista
+                saveFavorites(favorites);
             });
-
-            if (response.ok) {
-                const result = await response.json();
-                favoritosGlobal.push({
-                    _id: result._id,
-                    nombre,
-                    precio,
-                    categoria: "Destacado",
-                    imagen: img,
-                    estado: "Disponible"
-                });
-                icon.classList.remove('fa-regular');
-                icon.classList.add('fa-solid');
-                alert(`"${nombre}" agregado a Favoritos. ❤️`);
-            } else {
-                const errorData = await response.json();
-                alert(errorData.detail || "Error al agregar a favoritos ❌");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Error al agregar a favoritos");
-        }
-    }
-}
-
-// Cerrar sesión
-function cerrarSesion() {
-    if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-        // Limpiar datos del usuario del localStorage
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("usuarioEmail");
-        
-        // Limpiar datos locales legados
-        localStorage.removeItem("shoppingCart");
-        localStorage.removeItem("productFavorites");
-
-        // Limpiar UI de favoritos en la página (desmarcar botones)
-        try {
-            document.querySelectorAll('.btn-add-favorite, .btn-favorite').forEach(btn => {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-pressed', 'false');
-            });
-        } catch (_) {}
-
-        // Limpiar UI del carrito (dropdown, total, indicador)
-        try {
-            if (window.cg_clearCartUI) {
-                window.cg_clearCartUI();
-            }
-        } catch (_) {}
-        
-        console.log("Sesión cerrada");
-        
-        // Redirigir a la página de inicio de sesión
-        window.location.href = "Inicio_Sesion.html";
-    }
-}
-
-// Abrir modal cambiar contraseña
-function abrirModalCambiarContrasena() {
-    document.getElementById('passwordActual').value = '';
-    document.getElementById('passwordNueva').value = '';
-    document.getElementById('passwordConfirm').value = '';
-    document.getElementById('errorPasswordActual').style.display = 'none';
-    document.getElementById('errorPasswordNueva').style.display = 'none';
-    document.getElementById('errorPasswordConfirm').style.display = 'none';
-    const modal = new bootstrap.Modal(document.getElementById('modalCambiarContrasena'));
-    modal.show();
-}
-
-// Validar formato de contraseña nueva (>=8, 1 mayúscula, 1 dígito)
-function validarFormatoPassword(pwd) {
-    const largo = pwd.length >= 8;
-    const mayus = /[A-Z]/.test(pwd);
-    const digito = /\d/.test(pwd);
-    return largo && mayus && digito;
-}
-
-// Guardar nueva contraseña
-async function guardarNuevaContrasena() {
-    const actual = document.getElementById('passwordActual').value.trim();
-    const nueva = document.getElementById('passwordNueva').value.trim();
-    const confirm = document.getElementById('passwordConfirm').value.trim();
-
-    // Limpiar errores
-    const errAct = document.getElementById('errorPasswordActual');
-    const errNew = document.getElementById('errorPasswordNueva');
-    const errConf = document.getElementById('errorPasswordConfirm');
-    errAct.style.display = 'none';
-    errNew.style.display = 'none';
-    errConf.style.display = 'none';
-
-    let valido = true;
-    if (!actual) {
-        errAct.textContent = 'Ingresa tu contraseña actual';
-        errAct.style.display = 'block';
-        valido = false;
-    }
-    if (!validarFormatoPassword(nueva)) {
-        errNew.textContent = 'La nueva contraseña debe tener 8+ caracteres, 1 mayúscula y 1 dígito';
-        errNew.style.display = 'block';
-        valido = false;
-    }
-    if (nueva !== confirm) {
-        errConf.textContent = 'La confirmación no coincide';
-        errConf.style.display = 'block';
-        valido = false;
-    }
-    if (!valido) return;
-
-    try {
-        const usuarioEmail = obtenerUsuarioEmail();
-        if (!usuarioEmail) {
-            alert('No se encontró el correo del usuario. Inicia sesión nuevamente.');
-            return;
-        }
-        const resp = await fetch(`http://127.0.0.1:8000/usuarios/perfil/${encodeURIComponent(usuarioEmail)}/password`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password_actual: actual, password_nueva: nueva })
-        });
-        if (resp.ok) {
-            const modalEl = document.getElementById('modalCambiarContrasena');
-            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modal.hide();
-            alert('✅ Contraseña actualizada exitosamente');
-        } else {
-            const data = await resp.json();
-            const msg = data.detail || 'No se pudo actualizar la contraseña';
-            if (resp.status === 401) {
-                errAct.textContent = msg;
-                errAct.style.display = 'block';
-            } else {
-                alert('Error: ' + msg);
-            }
-        }
-    } catch (e) {
-        console.error('Error al cambiar contraseña', e);
-        alert('Error al cambiar contraseña. Verifica que el backend esté corriendo.');
-    }
-}
-
-// --- Función para mostrar/ocultar enlaces del navbar según sesión ---
-function actualizarEnlacesNavbar() {
-    let usuarioEmail = localStorage.getItem("usuarioEmail");
-    
-    if (!usuarioEmail) {
-        const usuarioLocal = localStorage.getItem("usuario");
-        if (usuarioLocal) {
-            try {
-                const usuarioObj = JSON.parse(usuarioLocal);
-                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
-                    usuarioEmail = usuarioObj.correo;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            } catch (e) {
-                if (usuarioLocal.includes("@")) {
-                    usuarioEmail = usuarioLocal;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            }
-        }
-    }
-    
-    // Detectar super usuario
-    let esSuperUser = false;
-    const uLocal = localStorage.getItem("usuario");
-    if (uLocal) {
-        try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
-    }
-    if (!esSuperUser && usuarioEmail) {
-        esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
-    }
-
-    // Portal de empleados: visible solo super usuario
-    const portalEmpleados = document.getElementById("nav-portal-empleados");
-    if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
-
-    // Historial de pedidos: visible si hay sesión (o super)
-    const historialPedidos = document.getElementById("nav-historial-pedidos");
-    if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
-    
-    // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
-    const inicioSesion = document.getElementById("nav-inicio-sesion");
-    const registro = document.getElementById("nav-registro");
-    
-    if (usuarioEmail) {
-        // Si hay sesión, ocultar registro e inicio sesión
-        if (inicioSesion) inicioSesion.style.display = "none";
-        if (registro) registro.style.display = "none";
-    } else {
-        // Si no hay sesión, mostrar registro e inicio sesión
-        if (inicioSesion) inicioSesion.style.display = "";
-        if (registro) registro.style.display = "";
-    }
-}
-
-// Lógica al cargar el DOM
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("Iniciando carga del perfil...");
-    
-    // Actualizar visibilidad de enlaces del navbar según sesión
-    actualizarEnlacesNavbar();
-    
-    // Cargar perfil del usuario primero
-    await cargarPerfilUsuario();
-    
-    // Cargar favoritos desde MongoDB
-    await cargarFavoritos();
-    
-    // Agregar eventos a los botones de favoritos
-    const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault(); // Previene la acción por defecto del enlace
-            await toggleFavorito(button);
         });
     });
-    
-    console.log("Carga del perfil completada");
-});
     
      // --- UTILIDADES DE FORMATO ---
     /**
@@ -1189,6 +445,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateCartDisplay();
     });
 </script>
-<script src="js/carrito-global.js"></script>
 </body>
 </html>

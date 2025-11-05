@@ -56,16 +56,16 @@
                 <li class="nav-item">
                     <a class="nav-link" href="Productos.html">Productos</a>
                 </li>
-                <li class="nav-item" id="nav-inicio-sesion">
+                <li class="nav-item">
                     <a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a>
                 </li>
-                 <li class="nav-item" id="nav-registro">
+                 <li class="nav-item">
                     <a class="nav-link" href="Registro.html">Registrate</a>
                 </li>
-                 <li class="nav-item" id="nav-portal-empleados" style="display: none;">
+                 <li class="nav-item">
                     <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
                 </li>
-                 <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
+                 <li class="nav-item">
                     <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
             </ul>
@@ -171,66 +171,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-// --- Función para mostrar/ocultar enlaces del navbar según sesión ---
-function actualizarEnlacesNavbar() {
-    let usuarioEmail = localStorage.getItem("usuarioEmail");
-    
-    if (!usuarioEmail) {
-        const usuarioLocal = localStorage.getItem("usuario");
-        if (usuarioLocal) {
-            try {
-                const usuarioObj = JSON.parse(usuarioLocal);
-                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
-                    usuarioEmail = usuarioObj.correo;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            } catch (e) {
-                if (usuarioLocal.includes("@")) {
-                    usuarioEmail = usuarioLocal;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            }
-        }
-    }
-    
-    // Detectar super usuario
-    let esSuperUser = false;
-    const uLocal = localStorage.getItem("usuario");
-    if (uLocal) {
-        try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
-    }
-    if (!esSuperUser && usuarioEmail) {
-        esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
-    }
-
-    // Portal de empleados: visible solo super usuario
-    const portalEmpleados = document.getElementById("nav-portal-empleados");
-    if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
-
-    // Historial de pedidos: visible si hay sesión (o super)
-    const historialPedidos = document.getElementById("nav-historial-pedidos");
-    if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
-    
-    // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
-    const inicioSesion = document.getElementById("nav-inicio-sesion");
-    const registro = document.getElementById("nav-registro");
-    
-    if (usuarioEmail) {
-        // Si hay sesión, ocultar registro e inicio sesión
-        if (inicioSesion) inicioSesion.style.display = "none";
-        if (registro) registro.style.display = "none";
-    } else {
-        // Si no hay sesión, mostrar registro e inicio sesión
-        if (inicioSesion) inicioSesion.style.display = "";
-        if (registro) registro.style.display = "";
-    }
-}
-
-// Actualizar navbar al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-    actualizarEnlacesNavbar();
-});
-document.getElementById('registroForm').addEventListener('submit', async function(e) {
+document.getElementById('registroForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
     document.querySelectorAll('.error-message').forEach(msg => msg.style.display = 'none');
@@ -258,60 +199,26 @@ document.getElementById('registroForm').addEventListener('submit', async functio
 
     if (!valido) return;
 
-    // Registrar usuario en MongoDB
-    async function registrarUsuario() {
-        try {
-            const usuarioData = {
-                nombres,
-                apellidos,
-                rut,
-                domicilio,
-                correo,
-                telefono,
-                password
-            };
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-            const response = await fetch("http://127.0.0.1:8000/usuarios/registro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(usuarioData)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log("Usuario registrado:", result);
-                
-                document.getElementById('successMessage').textContent = "✅ Perfil creado con éxito. Redirigiendo...";
-                document.getElementById('successMessage').style.display = 'block';
-                document.getElementById('registroForm').reset();
-
-                setTimeout(() => {
-                    window.location.href = "./Inicio_Sesion.html";
-                }, 1500);
-            } else {
-                const errorData = await response.json();
-                const errorMsg = errorData.detail || "Error al registrar usuario";
-                
-                if (errorMsg.includes("correo")) {
-                    document.getElementById('errorCorreo').textContent = errorMsg;
-                    document.getElementById('errorCorreo').style.display = "block";
-                } else if (errorMsg.includes("RUT")) {
-                    document.getElementById('errorRut').textContent = errorMsg;
-                    document.getElementById('errorRut').style.display = "block";
-                } else {
-                    alert(errorMsg);
-                }
-            }
-        } catch (error) {
-            console.error("Error al registrar usuario:", error);
-            alert("Error al registrar usuario. Verifica que el backend esté corriendo.");
-        }
+    if (usuarios.some(u => u.correo === correo)) {
+        document.getElementById('errorCorreo').textContent = "El email ya está en uso";
+        document.getElementById('errorCorreo').style.display = "block";
+        return;
     }
 
-    await registrarUsuario();
+    usuarios.push({ nombres, apellidos, rut, domicilio, correo, telefono, password });
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    document.getElementById('successMessage').textContent = "✅ Perfil creado con éxito";
+    document.getElementById('successMessage').style.display = 'block';
+    this.reset();
+
+    setTimeout(() => {
+        window.location.href = "./B03.HTML";
+    }, 1500);
 });
 </script>
-<script src="js/carrito-global.js"></script>
 
 </body>
 </html>

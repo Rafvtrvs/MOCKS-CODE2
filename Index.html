@@ -13,7 +13,7 @@
         flex-direction: column;
         min-height: 100vh;
         margin: 0;
-        background-color: #dddddd; /* Fondo gris claro */
+        background-color: #f8f9fa; /* Fondo gris claro */
        
         }
         /* Estilos básicos para el carrusel y el texto */
@@ -130,19 +130,19 @@
                 <li class="nav-item">
                     <a class="nav-link" href="Productos.html">Productos</a>
                 </li>
-                <li class="nav-item" id="nav-inicio-sesion">
+                <li class="nav-item">
                     <a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a>
                 </li>
-                 <li class="nav-item" id="nav-registro">
+                 <li class="nav-item">
                     <a class="nav-link" href="Registro.html">Registrate</a>
                 </li>
-                 <li class="nav-item" id="nav-portal-empleados" style="display: none;">
+                 <li class="nav-item">
                     <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
                 </li>
-                <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
+                <li class="nav-item">
                     <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
-                 <li class="nav-item" id="nav-analisis-ventas" style="display: none;">
+                 <li class="nav-item">
                     <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
                 </li>
             </ul>
@@ -193,21 +193,21 @@
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
                     <h2 class="display-3 **text-white**">Sabor sin límites</h2>
                     <p class="lead">Descubre nuestra nueva línea de productos sin gluten.</p>
-                    <a href="Productos.html" class="btn btn-outline-light btn-success mt-3">Ver Ofertas</a>
+                    <a href="#" class="btn btn-outline-light btn-success mt-3">Ver Ofertas</a>
                 </div>
             </div>
             <div class="carousel-item" style="background-image: url('https://www.thespruceeats.com/thmb/0CK65lVOSHILEZXSh1dVJ_Hl4Hc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/how-to-make-caffe-latte-765372-hero-01-2417e49c4a9c4789b3abdd36885f06ab.jpg');">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
                     <h2 class="display-3 **text-white**">Calidad y bienestar</h2>
                     <p class="lead **text-white**">Ingredientes frescos y naturales en cada bocado.</p>
-                    <a href="Productos.html" class="btn btn-outline-light btn-success mt-3">Conoce Más</a>
+                    <a href="#" class="btn btn-outline-light btn-success mt-3">Conoce Más</a>
                 </div>
             </div>
             <div class="carousel-item" style="background-image: url('https://images.cookforyourlife.org/wp-content/uploads/2020/06/Dark-Chocolate-Brownies-shutterstock_112430981.jpg');">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
                     <h2 class="display-3 **text-white**">Envío a tu puerta</h2>
                     <p class="lead **text-white**">Recibe tus favoritos donde estés, ¡fácil y rápido!</p>
-                    <a href="Productos.html" class="btn btn-outline-light btn-success mt-3">Comprar Ahora</a>
+                    <a href="#" class="btn btn-outline-light btn-success mt-3">Comprar Ahora</a>
                 </div>
             </div>
         </div>
@@ -231,7 +231,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Sandwich Vegano</h5>
                         <p class="card-text">Bajo en carbohidratos y horneado diariamente.</p>
-                        <a href="Productos.html" class="btn btn-success">Ver Detalle</a>
+                        <a href="#" class="btn btn-success">Ver Detalle</a>
                         <a href="#" class="btn btn-danger btn-add-favorite"
                             data-product-id="1"
                             data-product-name="Sandwich Vegano"
@@ -249,7 +249,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Café Latte</h5>
                         <p class="card-text">Perfecto para iniciar la mañana</p>
-                        <a href="Productos.html" class="btn btn-success">Ver Detalle</a>
+                        <a href="#" class="btn btn-success">Ver Detalle</a>
                         <a href="#" class="btn btn-danger btn-add-favorite"
                             data-product-id="2"
                             data-product-name="Café Latte"
@@ -267,7 +267,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Brownie de Chocolate</h5>
                         <p class="card-text">Delicioso sabor a Cacao y Almendras.</p>
-                        <a href="Productos.html" class="btn btn-success">Ver Detalle</a>
+                        <a href="#" class="btn btn-success">Ver Detalle</a>
                           <a href="#" class="btn btn-danger btn-add-favorite"
                             data-product-id="3"
                             data-product-name="Brownie Chocolate"
@@ -305,186 +305,72 @@
 
 
 <script>
-// ========================================
-// SISTEMA DE FAVORITOS CON MONGODB
-// ========================================
+// Función para obtener la lista de favoritos de localStorage
+    function getFavorites() {
+        // Devuelve un array vacío si no hay favoritos
+        const favorites = localStorage.getItem('productFavorites');
+        return favorites ? JSON.parse(favorites) : [];
+    }
 
-let favoritosGlobal = [];
+    // Función para guardar la lista de favoritos en localStorage
+    function saveFavorites(favoritesArray) {
+        localStorage.setItem('productFavorites', JSON.stringify(favoritesArray));
+    }
 
-// Función auxiliar para obtener el email del usuario
-function obtenerUsuarioEmail() {
-    let usuarioEmail = localStorage.getItem("usuarioEmail");
-    
-    if (!usuarioEmail) {
-        const usuarioLocal = localStorage.getItem("usuario");
-        if (usuarioLocal) {
-            try {
-                const usuarioObj = JSON.parse(usuarioLocal);
-                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
-                    usuarioEmail = usuarioObj.correo;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
-            } catch (e) {
-                if (usuarioLocal.includes("@")) {
-                    usuarioEmail = usuarioLocal;
-                    localStorage.setItem("usuarioEmail", usuarioEmail);
-                }
+    // Lógica al cargar el DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
+        let favorites = getFavorites();
+
+        // 1. Inicializar el estado de los botones al cargar la página
+        favoriteButtons.forEach(button => {
+            const id = button.dataset.productId;
+            const isFavorite = favorites.some(p => p.id === id);
+            const icon = button.querySelector('i');
+
+            if (isFavorite) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid'); // Corazón relleno si ya está en favoritos
             }
-        }
-    }
-    
-    return usuarioEmail;
-}
+        });
 
-// Cargar favoritos desde MongoDB
-async function cargarFavoritos() {
-    try {
-        const usuarioEmail = obtenerUsuarioEmail();
-        const url = usuarioEmail 
-            ? `http://127.0.0.1:8000/favoritos?usuario_email=${encodeURIComponent(usuarioEmail)}`
-            : "http://127.0.0.1:8000/favoritos";
-        
-        const response = await fetch(url);
-        favoritosGlobal = await response.json();
-        console.log("Favoritos cargados:", favoritosGlobal);
-        actualizarEstadoBotonesFavoritos();
-    } catch (error) {
-        console.error("Error al cargar favoritos:", error);
-        // Si hay error, inicializar como array vacío
-        favoritosGlobal = [];
-    }
-}
 
-// Verificar si un producto está en favoritos (por nombre)
-function estaEnFavoritos(nombre) {
-    return favoritosGlobal.some(f => f.nombre === nombre);
-}
+        // 2. Agregar el evento click a los botones
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault(); // Previene la acción por defecto del enlace
 
-// Convertir precio de formato string (ej: "4.500$") a número
-function convertirPrecio(precioStr) {
-    // Remover "$" y puntos, luego convertir a número
-    const precioNum = parseInt(precioStr.replace(/[$.]/g, ''));
-    return isNaN(precioNum) ? 0 : precioNum;
-}
+                const id = button.dataset.productId;
+                const name = button.dataset.productName;
+                const img = button.dataset.productImg;
+                const price = button.dataset.productPrice;
+                const descript = button.dataset.productDescript;
+                const icon = button.querySelector('i');
 
-// Actualizar el estado visual de los botones de favoritos
-function actualizarEstadoBotonesFavoritos() {
-    const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
-    favoriteButtons.forEach(button => {
-        const nombre = button.dataset.productName;
-        const icon = button.querySelector('i');
-        
-        if (estaEnFavoritos(nombre)) {
-            icon.classList.remove('fa-regular');
-            icon.classList.add('fa-solid'); // Corazón relleno si ya está en favoritos
-        } else {
-            icon.classList.remove('fa-solid');
-            icon.classList.add('fa-regular');
-        }
-    });
-}
+                // Recargar la lista de favoritos (importante por si cambia en otra pestaña)
+                favorites = getFavorites(); 
+                const isFavorite = favorites.some(p => p.id === id);
 
-// Toggle favorito (agregar o eliminar)
-async function toggleFavorito(button) {
-    const id = button.dataset.productId;
-    const nombre = button.dataset.productName;
-    const img = button.dataset.productImg;
-    const priceStr = button.dataset.productPrice;
-    const descript = button.dataset.productDescript;
-    const icon = button.querySelector('i');
-    
-    // Convertir precio a número
-    const precio = convertirPrecio(priceStr);
-    
-    const esFavorito = estaEnFavoritos(nombre);
-    
-    if (esFavorito) {
-        // Eliminar de favoritos
-        const favoritoId = favoritosGlobal.find(f => f.nombre === nombre)?._id;
-        if (favoritoId) {
-            try {
-                const usuarioEmail = obtenerUsuarioEmail();
-                const url = usuarioEmail 
-                    ? `http://127.0.0.1:8000/favoritos/${favoritoId}?usuario_email=${encodeURIComponent(usuarioEmail)}`
-                    : `http://127.0.0.1:8000/favoritos/${favoritoId}`;
-                
-                const response = await fetch(url, {
-                    method: "DELETE"
-                });
-
-                if (response.ok) {
-                    favoritosGlobal = favoritosGlobal.filter(f => f._id !== favoritoId);
+                if (isFavorite) {
+                    // Eliminar de favoritos
+                    favorites = favorites.filter(p => p.id !== id);
                     icon.classList.remove('fa-solid');
                     icon.classList.add('fa-regular');
-                    alert(`"${nombre}" eliminado de Favoritos. 💔`);
+                    alert(`"${name}" eliminado de Favoritos. 💔`);
                 } else {
-                    alert("Error al eliminar de favoritos ❌");
+                    // Agregar a favoritos
+                    const newFavorite = { id, name, img, price, descript};
+                    favorites.push(newFavorite);
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                    alert(`"${name}" agregado a Favoritos. ❤️`);
                 }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Error al eliminar de favoritos");
-            }
-        }
-    } else {
-        // Agregar a favoritos
-        try {
-            const usuarioEmail = obtenerUsuarioEmail();
-            if (!usuarioEmail) {
-                alert("Por favor, inicia sesión para agregar favoritos");
-                return;
-            }
-            
-            const response = await fetch("http://127.0.0.1:8000/favoritos", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    nombre, 
-                    precio, 
-                    categoria: "Destacado", // Valor por defecto
-                    imagen: img,
-                    estado: "Disponible", // Valor por defecto
-                    usuario_email: usuarioEmail
-                })
+
+                // Guardar la nueva lista
+                saveFavorites(favorites);
             });
-
-            if (response.ok) {
-                const result = await response.json();
-                favoritosGlobal.push({
-                    _id: result._id,
-                    nombre,
-                    precio,
-                    categoria: "Destacado",
-                    imagen: img,
-                    estado: "Disponible"
-                });
-                icon.classList.remove('fa-regular');
-                icon.classList.add('fa-solid');
-                alert(`"${nombre}" agregado a Favoritos. ❤️`);
-            } else {
-                const errorData = await response.json();
-                alert(errorData.detail || "Error al agregar a favoritos ❌");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Error al agregar a favoritos");
-        }
-    }
-}
-
-// Lógica al cargar el DOM
-document.addEventListener('DOMContentLoaded', async () => {
-    // Cargar favoritos desde MongoDB
-    await cargarFavoritos();
-    
-    // Agregar eventos a los botones de favoritos
-    const favoriteButtons = document.querySelectorAll('.btn-add-favorite');
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault(); // Previene la acción por defecto del enlace
-            await toggleFavorito(button);
         });
     });
-});
     
      // --- UTILIDADES DE FORMATO ---
     /**
@@ -629,95 +515,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
     }
 
-    // --- Función para verificar si el usuario es super usuario ---
-    function esSuperUsuario() {
-        let usuarioEmail = localStorage.getItem("usuarioEmail");
-        
-        if (!usuarioEmail) {
-            const usuarioLocal = localStorage.getItem("usuario");
-            if (usuarioLocal) {
-                try {
-                    const usuarioObj = JSON.parse(usuarioLocal);
-                    if (usuarioObj && typeof usuarioObj === 'object') {
-                        if (usuarioObj.correo) {
-                            usuarioEmail = usuarioObj.correo;
-                            localStorage.setItem("usuarioEmail", usuarioEmail);
-                        }
-                        if (usuarioObj.es_super_usuario === true) {
-                            return true;
-                        }
-                    }
-                } catch (e) {
-                    if (usuarioLocal.includes("@")) {
-                        usuarioEmail = usuarioLocal;
-                        localStorage.setItem("usuarioEmail", usuarioEmail);
-                    }
-                }
-            }
-        }
-        
-        const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
-        return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
-    }
-
-    // --- Función para mostrar/ocultar enlaces del navbar según sesión ---
-    function actualizarEnlacesNavbar() {
-        let usuarioEmail = localStorage.getItem("usuarioEmail");
-        let esSuperUser = esSuperUsuario();
-        
-        if (!usuarioEmail) {
-            const usuarioLocal = localStorage.getItem("usuario");
-            if (usuarioLocal) {
-                try {
-                    const usuarioObj = JSON.parse(usuarioLocal);
-                    if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
-                        usuarioEmail = usuarioObj.correo;
-                        localStorage.setItem("usuarioEmail", usuarioEmail);
-                        if (usuarioObj.es_super_usuario === true) {
-                            esSuperUser = true;
-                        }
-                    }
-                } catch (e) {
-                    if (usuarioLocal.includes("@")) {
-                        usuarioEmail = usuarioLocal;
-                        localStorage.setItem("usuarioEmail", usuarioEmail);
-                    }
-                }
-            }
-        }
-        
-        // Portal de empleados: visible solo super usuario
-        const portalEmpleados = document.getElementById("nav-portal-empleados");
-        if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
-
-        // Historial de pedidos: visible si hay sesión (o super)
-        const historialPedidos = document.getElementById("nav-historial-pedidos");
-        if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
-
-        // Análisis de ventas: solo super usuario
-        const analisisVentas = document.getElementById("nav-analisis-ventas");
-        if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
-        
-        // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
-        const inicioSesion = document.getElementById("nav-inicio-sesion");
-        const registro = document.getElementById("nav-registro");
-        
-        if (usuarioEmail) {
-            // Si hay sesión, ocultar registro e inicio sesión
-            if (inicioSesion) inicioSesion.style.display = "none";
-            if (registro) registro.style.display = "none";
-        } else {
-            // Si no hay sesión, mostrar registro e inicio sesión
-            if (inicioSesion) inicioSesion.style.display = "";
-            if (registro) registro.style.display = "";
-        }
-    }
-
     // --- Inicialización al cargar la página ---
     document.addEventListener('DOMContentLoaded', () => {
-        // Actualizar visibilidad de enlaces del navbar según sesión
-        actualizarEnlacesNavbar();
-        
         // Asigna el evento de clic a todos los botones 'Añadir al Carrito'
         const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
         addToCartButtons.forEach(button => {
@@ -727,10 +526,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Carga y muestra el carrito al inicio (¡Esto ahora gestiona la persistencia del punto!)
         updateCartDisplay();
     });
-    
+
 
 </script>
-<script src="js/carrito-global.js"></script>
 
 </body>
 </html>
