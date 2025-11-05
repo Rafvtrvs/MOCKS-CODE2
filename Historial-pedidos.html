@@ -151,16 +151,16 @@
                 <li class="nav-item">
                     <a class="nav-link" href="Productos.html">Productos</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-inicio-sesion">
                     <a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-registro">
                     <a class="nav-link" href="Registro.html">Registrate</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-portal-empleados" style="display: none;">
                     <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
                     <a class="nav-link active text-success" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
             </ul>
@@ -290,8 +290,83 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ========================================
+// VERIFICACIÓN DE SESIÓN
+// ========================================
+
+function verificarSesion() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    if (!usuarioEmail) {
+        alert("Debes iniciar sesión para acceder a esta página");
+        window.location.href = "Inicio_Sesion.html";
+        return false;
+    }
+    
+    // Esta página es visible para cualquier usuario con sesión iniciada
+    
+    return true;
+}
+
+    // --- Función para mostrar/ocultar enlaces del navbar según sesión ---
+    function actualizarEnlacesNavbar() {
+        // Detectar super usuario
+        let esSuperUser = false;
+        const uLocal = localStorage.getItem("usuario");
+        if (uLocal) {
+            try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
+        }
+        if (!esSuperUser && usuarioEmail) {
+            esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
+        }
+
+        // Portal de empleados: visible solo super usuario
+        const portalEmpleados = document.getElementById("nav-portal-empleados");
+        if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
+
+        // Historial de pedidos: visible si hay sesión (o super)
+        const historialPedidos = document.getElementById("nav-historial-pedidos");
+        if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
+
+        // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
+        const inicioSesion = document.getElementById("nav-inicio-sesion");
+        const registro = document.getElementById("nav-registro");
+        if (usuarioEmail) {
+            if (inicioSesion) inicioSesion.style.display = "none";
+            if (registro) registro.style.display = "none";
+        } else {
+            if (inicioSesion) inicioSesion.style.display = "";
+            if (registro) registro.style.display = "";
+        }
+    }
+
     // Función de inicialización del sistema de estrellas
     document.addEventListener('DOMContentLoaded', () => {
+        // Verificar sesión antes de continuar
+        if (!verificarSesion()) {
+            return; // Detener la ejecución si no hay sesión
+        }
+        
+        // Actualizar visibilidad de enlaces del navbar según sesión
+        actualizarEnlacesNavbar();
         const ratingContainers = document.querySelectorAll('.rating');
         const invoiceButtons = document.querySelectorAll('.btn-send-invoice'); // Obtener botones de factura
 
@@ -542,5 +617,6 @@
     }
 
 </script>
+<script src="js/carrito-global.js"></script>
 </body>
 </html>
