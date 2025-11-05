@@ -54,6 +54,13 @@
         color: #dc3545;
     }
 
+    /* Estilo para hacer el badge más pequeño */
+    .badge {
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.35rem !important;
+        line-height: 1.2;
+    }
+
      /* Estilo para el punto de notificación roja del carrito */
     .cart-notification-dot {
             /* Diseño del punto */
@@ -113,16 +120,16 @@
                 <li class="nav-item">
                     <a class="nav-link" href="Productos.html">Productos</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-inicio-sesion">
                     <a class="nav-link" href="#">Inicio Sesión</a>
                 </li>
-                 <li class="nav-item">
+                 <li class="nav-item" id="nav-registro">
                     <a class="nav-link" href="Registro.html">Registrate</a>
                 </li>
-                 <li class="nav-item">
+                 <li class="nav-item" id="nav-portal-empleados" style="display: none;">
                     <a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
                     <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
             </ul>
@@ -187,245 +194,380 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Función para obtener la lista de favoritos de localStorage
-    function getFavorites() {
-        const favorites = localStorage.getItem('productFavorites');
-        return favorites ? JSON.parse(favorites) : [];
-    }
+   // ========================================
+// SISTEMA DE FAVORITOS CON MONGODB
+// ========================================
 
-    // Función para guardar la lista de favoritos en localStorage
-    function saveFavorites(favoritesArray) {
-        localStorage.setItem('productFavorites', JSON.stringify(favoritesArray));
-    }
+let favoritosGlobal = [];
+let carritoGlobal = [];
 
-    // Función principal para dibujar las cards de favoritos
-    function renderFavorites() {
-        const favoritesContainer = document.getElementById('favorites-container');
-        const favorites = getFavorites();
-        favoritesContainer.innerHTML = ''; // Limpiar el contenedor antes de renderizar
-
-        if (favorites.length === 0) {
-            favoritesContainer.innerHTML = '<div class="col-12"><div class="alert alert-success text-center" role="alert">Aún no tienes productos favoritos. ¡Explora la <a href="Index.html" class="alert-link">página de inicio</a> o <a href="Productos.html" class="alert-link">Productos</a> para añadir algunos!</div></div>';
-            return;
+// Función auxiliar para obtener el email del usuario
+function obtenerUsuarioEmail() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
         }
+    }
+    
+    return usuarioEmail;
+}
 
-        favorites.forEach(product => {
-            const cardHTML = `
-                <div class="col" data-product-id="${product.id}">
-                    <div class="card product-card shadow-sm border-0">
-                        <img src="${product.img}" class="card-img-top" alt="${product.name}">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold">${product.name}</h5>
-                            <p class="card-text text-muted">${product.descript}</p>
-                            <p class="fs-4 text-success mt-auto fw-bold">${product.price}</p> 
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="#" class="btn btn-success btn-add-to-cart"
-                                     data-product-id = "${product.id}"
-                                     data-product-img = "${product.img}"
-                                     data-product-name = "${product.name}"
-                                     data-product-price = ${product.price}>
-                                    <i class="fas fa-cart-plus me-1"></i> Añadir al carrito
-                                </a>
-                                <button class="btn btn-link btn-favorite p-0 btn-remove-favorite" data-product-id="${product.id}" data-product-name="${product.name}">
-                                    <i class="fas fa-heart"></i> </button>
-                            </div>
-                        </div>
+// Inicializar carrito para el dropdown
+async function inicializarCarrito() {
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/carrito?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : "http://127.0.0.1:8000/carrito";
+        
+        const response = await fetch(url);
+        carritoGlobal = await response.json();
+        actualizarDropdownCarrito();
+    } catch (error) {
+        console.error("Error al cargar carrito:", error);
+    }
+}
+
+// Actualizar dropdown del carrito
+function actualizarDropdownCarrito() {
+    const cartProductsContainer = document.getElementById("cart-products");
+    const cartTotal = document.getElementById("cart-total");
+    const cartNotificationBadge = document.getElementById("cart-notification-badge");
+    
+    if (!cartProductsContainer) return;
+    
+    cartProductsContainer.innerHTML = "";
+    
+    if (carritoGlobal.length === 0) {
+        cartProductsContainer.innerHTML = '<li class="dropdown-item text-muted text-center">El carrito está vacío.</li>';
+        if (cartTotal) cartTotal.textContent = "$0";
+        if (cartNotificationBadge) cartNotificationBadge.classList.remove("active");
+    } else {
+        let total = 0;
+        
+        carritoGlobal.forEach((producto) => {
+            const cantidad = producto.cantidad || 1;
+            const subtotal = producto.precio * cantidad;
+            total += subtotal;
+            
+            const item = document.createElement("li");
+            item.className = "dropdown-item d-flex align-items-center justify-content-between py-2";
+            item.innerHTML = `
+                <div class="d-flex align-items-center flex-grow-1">
+                    <img src="${producto.imagen || 'https://via.placeholder.com/40'}" 
+                         width="40" height="40" 
+                         class="rounded me-2" 
+                         style="object-fit: cover;">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">${producto.nombre}</div>
+                        <small class="text-muted">
+                            ${cantidad} x $${producto.precio.toLocaleString('es-CL')}
+                        </small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger ms-2" 
+                        onclick="eliminarDelCarritoDropdown('${producto._id}')" 
+                        title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            cartProductsContainer.appendChild(item);
+        });
+        
+        if (cartTotal) cartTotal.textContent = `$${total.toLocaleString('es-CL')}`;
+        if (cartNotificationBadge) cartNotificationBadge.classList.add("active");
+    }
+}
+
+// Eliminar del carrito
+async function eliminarDelCarritoDropdown(idProducto) {
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/carrito/${idProducto}?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : `http://127.0.0.1:8000/carrito/${idProducto}`;
+        
+        const response = await fetch(url, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            await inicializarCarrito();
+        }
+    } catch (error) {
+        console.error("Error al eliminar del carrito:", error);
+    }
+}
+
+// Cargar favoritos desde MongoDB
+async function cargarFavoritos() {
+    try {
+        console.log("Cargando favoritos desde MongoDB...");
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/favoritos?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : "http://127.0.0.1:8000/favoritos";
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        favoritosGlobal = await response.json();
+        
+        console.log("Favoritos cargados exitosamente:", favoritosGlobal);
+        console.log("Cantidad de favoritos:", favoritosGlobal.length);
+        
+        renderizarFavoritos();
+    } catch (error) {
+        console.error("Error al cargar favoritos:", error);
+        const favoritesContainer = document.getElementById('favorites-container');
+        if (favoritesContainer) {
+            favoritesContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <strong>Error al cargar los favoritos</strong><br>
+                        Verifica que el backend esté corriendo en http://127.0.0.1:8000
+                        <br><small>Error: ${error.message}</small>
                     </div>
                 </div>
             `;
-            favoritesContainer.innerHTML += cardHTML;
-        });
+        }
+    }
+}
 
-        // Añadir el evento para ELIMINAR favoritos
-        document.querySelectorAll('.btn-remove-favorite').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const idToRemove = button.dataset.productId;
-                const nameToRemove = button.dataset.productName;
-                
-                // Filtra la lista para eliminar el producto
-                let currentFavorites = getFavorites();
-                const newFavorites = currentFavorites.filter(p => p.id !== idToRemove);
-                
-                // Guardar y re-renderizar
-                saveFavorites(newFavorites);
-                alert(`"${nameToRemove}" eliminado de Favoritos. 💔`);
-                renderFavorites(); // Volver a dibujar la lista sin el producto eliminado
-            });
-        });
+// Renderizar favoritos
+function renderizarFavoritos() {
+    const favoritesContainer = document.getElementById('favorites-container');
+    
+    if (!favoritesContainer) {
+        console.error("No se encontró el contenedor de favoritos");
+        return;
+    }
+    
+    favoritesContainer.innerHTML = '';
+    console.log("Renderizando favoritos. Total:", favoritosGlobal.length);
+
+    if (favoritosGlobal.length === 0) {
+        console.log("No hay favoritos para mostrar");
+        favoritesContainer.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-success text-center" role="alert">
+                    Aún no tienes productos favoritos. ¡Explora la 
+                    <a href="Index.html" class="alert-link">página de inicio</a> o 
+                    <a href="Productos.html" class="alert-link">Productos</a> para añadir algunos!
+                </div>
+            </div>
+        `;
+        return;
     }
 
-    // Ejecutar al cargar la página
-    document.addEventListener('DOMContentLoaded', renderFavorites);
+    favoritosGlobal.forEach(producto => {
+        const col = document.createElement('div');
+        col.className = 'col';
+        col.dataset.productId = producto._id;
 
+        // Verificar si está en el carrito
+        const estaEnCarrito = carritoGlobal.some(c => c.nombre === producto.nombre);
 
-    // --- UTILIDADES DE FORMATO ---
-    /**
-    * Formatea un número entero (ej: 4500) a formato de moneda (ej: $4.500).
-    * @param {string|number} value - El valor numérico.
-    * @returns {string} El valor formateado como moneda CLP (Peso Chileno, sin decimales).
-    */
-    function formatCurrency(value) {
-        const num = parseInt(value); 
-        if (isNaN(num)) return "$0";
-
-        return new Intl.NumberFormat('es-CL', {
-            style: 'currency',
-            currency: 'CLP',
-            minimumFractionDigits: 0
-        }).format(num);
-    }
-
-    // --- Utilidades para Carrito (Persistencia) ---
-    function getCart() {
-        // Obtiene el carrito del localStorage, si no existe, devuelve un array vacío
-        const cart = localStorage.getItem('shoppingCart');
-        return cart ? JSON.parse(cart) : [];
-    }
-
-    function saveCart(cartArray) {
-        localStorage.setItem('shoppingCart', JSON.stringify(cartArray));
-        updateCartDisplay(); // Llama a la función de actualización del UI
-    }
-
-    // --- Actualización de la Interfaz del Carrito (Dropdown) ---
-    function updateCartDisplay() {
-        const cart = getCart();
-        const cartProductsDiv = document.getElementById('cart-products'); // Contenedor de la lista
-        const cartTotalSpan = document.getElementById('cart-total');      // Total final
-        const notificationBadge = document.getElementById('cart-notification-badge'); // Badge de notificación
-
-        // Verificación de existencia de contenedores
-        if (!cartProductsDiv || !cartTotalSpan || !notificationBadge) return;
-        
-        let total = 0; // Se inicializa el total
-
-        // 1. Limpiar la lista actual
-        cartProductsDiv.innerHTML = '';
-
-        // 2. Si hay productos, construir la lista
-        if (cart.length > 0) {
-            cart.forEach(item => {
-                // El valor del precio se limpia eliminando todos los caracteres que NO son dígitos.
-                // Esto es robusto para precios no "limpios" (ej: "$4.500")
-                const cleanedPriceString = item.price.replace(/[^\d]/g, '');
-
-                // Convierte la cadena limpia a un número entero.
-                const priceValue = parseInt(cleanedPriceString);
-                
-                // ** Lógica de cálculo corregida **
-                let subtotal = 0;
-                if (!isNaN(priceValue)) {
-                    subtotal = priceValue * item.quantity;
-                    total += subtotal; // ** IMPORTANTE: Aquí se acumula el total **
-                } else {
-                    console.warn(`Advertencia: Precio inválido para el ítem ${item.name}: ${item.price}`);
-                }
-                // ** Fin de lógica de cálculo corregida **
-                
-                // Crear el elemento de lista del producto
-                const productItem = document.createElement('li');
-                productItem.classList.add('dropdown-item', 'd-flex', 'justify-content-between', 'align-items-center', 'py-2');
-                
-                // Genera el HTML del ítem con CANTIDAD, NOMBRE y PRECIO (subtotal formateado)
-                // Se usa 'subtotal' que ya fue calculado en el bloque anterior
-                productItem.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-success me-2">${item.quantity}x</span>
-                        <span class="text-truncate" style="max-width: 150px;">${item.name}</span>
+        col.innerHTML = `
+            <div class="card product-card shadow-sm border-0">
+                <img src="${producto.imagen || 'https://via.placeholder.com/300'}" 
+                     class="card-img-top" 
+                     alt="${producto.nombre}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold">${producto.nombre}</h5>
+                    <p class="card-text text-muted">${producto.categoria}</p>
+                    <span class="badge ${obtenerClaseBadge(producto.estado)} mb-2">${producto.estado || "N/A"}</span>
+                    <p class="fs-4 text-success mt-auto fw-bold">$${producto.precio.toLocaleString('es-CL')}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-success ${estaEnCarrito ? 'disabled' : ''}" 
+                                onclick="agregarAlCarritoDesdeFavoritos('${producto._id}', '${producto.nombre.replace(/'/g, "\\'")}', ${producto.precio}, '${(producto.imagen || '').replace(/'/g, "\\'")}')">
+                            <i class="fas fa-cart-plus me-1"></i> 
+                            ${estaEnCarrito ? 'En el carrito' : 'Añadir al carrito'}
+                        </button>
+                        <button class="btn btn-link btn-favorite p-0" 
+                                onclick="eliminarDeFavoritos('${producto._id}', '${producto.nombre.replace(/'/g, "\\'")}')"
+                                title="Eliminar de favoritos">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </div>
-                    <span class="ms-auto">${formatCurrency(subtotal)}</span>
-                    <button class="btn btn-sm btn-danger remove-item-btn ms-2" data-product-id="${item.id}">&times;</button>
-                `;
-                cartProductsDiv.appendChild(productItem);
-            });
-            
-            // ACTIVAR EL PUNTO DE NOTIFICACIÓN SI HAY PRODUCTOS
-            notificationBadge.classList.add('active');
+                </div>
+            </div>
+        `;
+        
+        favoritesContainer.appendChild(col);
+        console.log("Producto renderizado:", producto.nombre);
+    });
+    
+    console.log("Todos los favoritos han sido renderizados");
+}
 
-        } else {
-            // Mostrar mensaje de carrito vacío
-            cartProductsDiv.innerHTML = '<li class="dropdown-item text-muted text-center" id="empty-cart-message">El carrito está vacío.</li>';
-            
-            // DESACTIVAR EL PUNTO DE NOTIFICACIÓN SI ESTÁ VACÍO
-            notificationBadge.classList.remove('active');
-        }
+// Obtener clase de badge según estado
+function obtenerClaseBadge(estado) {
+    switch(estado) {
+        case "Disponible":
+            return "bg-success";
+        case "Agotado":
+            return "bg-danger";
+        case "Descontinuado":
+            return "bg-warning text-dark";
+        default:
+            return "bg-secondary";
+    }
+}
 
-        // 3. Actualizar el total del dropdown
-        cartTotalSpan.textContent = formatCurrency(total);
+// Eliminar de favoritos
+async function eliminarDeFavoritos(id, nombre) {
+    if (!confirm(`¿Eliminar "${nombre}" de tus favoritos?`)) {
+        return;
+    }
 
-        // 4. Configurar eventos para eliminar (para los botones recién creados)
-        document.querySelectorAll('.remove-item-btn').forEach(button => {
-            button.addEventListener('click', removeItemFromCart);
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/favoritos/${id}?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : `http://127.0.0.1:8000/favoritos/${id}`;
+        
+        const response = await fetch(url, {
+            method: "DELETE"
         });
-    }
 
-    // --- Lógica de Agregar Producto ---
-    function addItemToCart(e) {
-        e.preventDefault();
-        const button = e.currentTarget;
-
-        const id = button.dataset.productId;
-        const img = button.dataset.productImg;
-        const name = button.dataset.productName;
-        const price = button.dataset.productPrice; 
-        
-        let cart = getCart();
-        let existingItem = cart.find(item => item.id === id);
-
-        if (existingItem) {
-            existingItem.quantity += 1;
+        if (response.ok) {
+            console.log(`"${nombre}" eliminado de favoritos`);
+            await cargarFavoritos(); // Recargar la lista
         } else {
-            cart.push({
-                id: id,
-                img: img, 
-                name: name,
-                price: price, // Valor numérico limpio
-                quantity: 1
-            });
+            alert("Error al eliminar de favoritos ❌");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Error al eliminar de favoritos");
+    }
+}
+
+// Agregar al carrito desde favoritos
+async function agregarAlCarritoDesdeFavoritos(id, nombre, precio, imagen) {
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        if (!usuarioEmail) {
+            alert("Por favor, inicia sesión para agregar productos al carrito");
+            return;
+        }
+        
+        // Verificar si ya está en el carrito
+        const yaEnCarrito = carritoGlobal.some(c => c.nombre === nombre);
+        if (yaEnCarrito) {
+            alert("Este producto ya está en tu carrito 🛒");
+            return;
         }
 
-        saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
-        
-        // Ya no es necesario forzar el display: 'block' aquí,
-        // porque updateCartDisplay() ahora se encarga de aplicar la clase 'active'
+        const response = await fetch("http://127.0.0.1:8000/carrito", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                nombre, 
+                precio, 
+                imagen,
+                cantidad: 1,
+                usuario_email: usuarioEmail
+            })
+        });
+
+        if (response.ok) {
+            await inicializarCarrito(); // Actualizar carrito
+            await cargarFavoritos(); // Re-renderizar para actualizar botones
+            console.log(`"${nombre}" agregado al carrito`);
+        } else {
+            alert("No se pudo agregar al carrito ❌");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Error al agregar al carrito");
     }
+}
 
-    // --- Lógica de Eliminar Producto ---
-    function removeItemFromCart(e) {
-        e.stopPropagation();
-        
-        const idToRemove = e.currentTarget.dataset.productId;
-        let cart = getCart();
-
-        const existingItemIndex = cart.findIndex(item => item.id === idToRemove);
-
-        if (existingItemIndex > -1) {
-            let item = cart[existingItemIndex];
-        
-            // 2. Decrementar la cantidad
-            item.quantity -= 1;
-
-            // 3. Si la cantidad es 0 o menos, eliminar el producto del array
-            if (item.quantity <= 0) {
-                cart.splice(existingItemIndex, 1); // Remueve 1 elemento en la posición encontrada
+// Inicialización
+// --- Función para mostrar/ocultar enlaces del navbar según sesión ---
+function actualizarEnlacesNavbar() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
             }
         }
-
-        saveCart(cart); // <<-- Esto guarda y llama a updateCartDisplay() para refrescar el dropdown
+    }
+    
+    // Detectar super usuario por objeto usuario o email
+    let esSuperUser = false;
+    const uLocal = localStorage.getItem("usuario");
+    if (uLocal) {
+        try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
+    }
+    if (!esSuperUser && usuarioEmail) {
+        esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
     }
 
-    // --- Inicialización al cargar la página ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Asigna el evento de clic a todos los botones 'Añadir al Carrito'
-        const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
-        addToCartButtons.forEach(button => {
-            button.addEventListener('click', addItemToCart);
-        });
+    // Portal de empleados: visible solo super usuario
+    const portalEmpleados = document.getElementById("nav-portal-empleados");
+    if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
 
-        // Carga y muestra el carrito al inicio (¡Esto ahora gestiona la persistencia del punto!)
-        updateCartDisplay();
-    });
+    // Historial de pedidos: visible si hay sesión (o super)
+    const historialPedidos = document.getElementById("nav-historial-pedidos");
+    if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
+    
+    // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
+    const inicioSesion = document.getElementById("nav-inicio-sesion");
+    const registro = document.getElementById("nav-registro");
+    
+    if (usuarioEmail) {
+        // Si hay sesión, ocultar registro e inicio sesión
+        if (inicioSesion) inicioSesion.style.display = "none";
+        if (registro) registro.style.display = "none";
+    } else {
+        // Si no hay sesión, mostrar registro e inicio sesión
+        if (inicioSesion) inicioSesion.style.display = "";
+        if (registro) registro.style.display = "";
+    }
+}
 
+document.addEventListener('DOMContentLoaded', async function() {
+    // Actualizar visibilidad de enlaces del navbar según sesión
+    actualizarEnlacesNavbar();
+    console.log("Iniciando página de favoritos...");
+    
+    await inicializarCarrito();
+    await cargarFavoritos();
+    
+    console.log("Página de favoritos cargada");
+});
 </script>
+<script src="js/carrito-global.js"></script>
 </body>
 </html>

@@ -22,10 +22,8 @@
 
         .card-img-top {
             height: 200px;
-            width: 100%;   
-            object-fit: fill; 
-            border-top-left-radius: 0.25rem;  /* Mantener bordes redondeados */
-            border-top-right-radius: 0.25rem;
+            object-fit: cover;
+            width: 100%;
         }
         /* Estilo para los indicadores de estado */
         .badge-disponible {
@@ -39,18 +37,21 @@
             color: #212529; /* Texto oscuro para contraste */
         }
 
-        /* Estilo para los botones de Favoritos (simulando tu estilo anterior) */
-        .btn-favorito {
-            background-color: #dc3545; /* Marrón tierra */
-            border-color: #dc3545;
-            color: white;
+        /* Estilo para hacer el badge más pequeño */
+        .badge {
+            font-size: 0.65rem !important;
+            padding: 0.15rem 0.35rem !important;
+            line-height: 1.2;
         }
-        .btn-favorito:hover {
-            background-color: #dc3545 !important; /* Rojo más oscuro al hacer hover */
-            border-color: #dc3545 !important;
-            color: rgb(247, 244, 244) !important;
-            transform: scale(1.02); /* Mantiene tu efecto de escala */
-            transition: all 0.3s ease;
+
+        .btn-favorite {
+            color: #dc3545; /* Rojo de Font Awesome */
+            font-size: 1.25rem;
+            transition: color 0.1s;
+        }
+        /* Icono relleno para indicar que es favorito */
+        .btn-favorite i.fas {
+            color: #dc3545;
         }
 
         .btn-exito {
@@ -93,6 +94,7 @@
             text-decoration: none !important;
         }
 
+        /* Estilo específico para las Cards de producto */
         .product-card {
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%; /* Asegura que todas las cards tengan la misma altura */
@@ -161,10 +163,10 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="Index.html">Inicio</a></li>
           <li class="nav-item"><a class="nav-link active text-success" href="Productos.html">Productos</a></li>
-          <li class="nav-item"><a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a></li>
-          <li class="nav-item"><a class="nav-link" href="Registro.html">Regístrate</a></li>
-          <li class="nav-item"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
-          <li class="nav-item"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
+          <li class="nav-item" id="nav-inicio-sesion"><a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a></li>
+          <li class="nav-item" id="nav-registro"><a class="nav-link" href="Registro.html">Regístrate</a></li>
+          <li class="nav-item" id="nav-portal-empleados" style="display: none;"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
+          <li class="nav-item" id="nav-historial-pedidos" style="display: none;"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
         </ul>
 
         <ul class="navbar-nav">
@@ -207,7 +209,7 @@
         <button type="button" class="btn btn-outline-success">+$30.000</button>
       </div>
 
-      <a href="Administrar_Productos.html" class="btn btn-admin mb-2 me-3">
+      <a href="Administrar_productos.html" id="btn-administrar-productos" class="btn btn-admin mb-2 me-3" style="display: none;">
         <i class="fas fa-cogs me-2"></i>Administrar Productos
       </a>
 
@@ -239,7 +241,7 @@
 
     <div class="container py-5">
       <h2 class="text-center text-success mb-4">Nuestros Productos</h2>
-      <div class="row" id="productos-container">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4" id="productos-container">
         <!-- Aquí se insertarán los productos desde el backend -->
       </div>
     </div>
@@ -267,112 +269,618 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-
 <script>
-let carritoSesion = []; // Variable global para el carrito
+let carritoGlobal = [];
+let favoritosGlobal = [];
 
+// Función auxiliar para obtener el email del usuario
+function obtenerUsuarioEmail() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                // Si no es JSON válido pero contiene @, podría ser un email
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    return usuarioEmail;
+}
+
+// Cargar e inicializar carrito
+async function inicializarCarrito() {
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/carrito?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : "http://127.0.0.1:8000/carrito";
+        
+        const response = await fetch(url);
+        const productosCarrito = await response.json();
+        
+        carritoGlobal = productosCarrito;
+        sessionStorage.setItem("carrito", JSON.stringify(carritoGlobal));
+        actualizarDropdownCarrito();
+        
+        console.log("Carrito inicializado:", carritoGlobal);
+    } catch (error) {
+        console.error("Error al inicializar carrito:", error);
+        const carritoLocal = sessionStorage.getItem("carrito");
+        if (carritoLocal) {
+            carritoGlobal = JSON.parse(carritoLocal);
+            actualizarDropdownCarrito();
+        }
+    }
+}
+
+// Cargar e inicializar favoritos
+async function inicializarFavoritos() {
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/favoritos?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : "http://127.0.0.1:8000/favoritos";
+        
+        const response = await fetch(url);
+        const productosFavoritos = await response.json();
+        
+        favoritosGlobal = productosFavoritos;
+        console.log("Favoritos inicializados:", favoritosGlobal);
+    } catch (error) {
+        console.error("Error al inicializar favoritos:", error);
+    }
+}
+
+// Actualizar dropdown del carrito
+function actualizarDropdownCarrito() {
+    const cartProductsContainer = document.getElementById("cart-products");
+    const cartTotal = document.getElementById("cart-total");
+    const cartNotificationBadge = document.getElementById("cart-notification-badge");
+    
+    if (!cartProductsContainer) return;
+    
+    cartProductsContainer.innerHTML = "";
+    
+    if (carritoGlobal.length === 0) {
+        cartProductsContainer.innerHTML = '<li class="dropdown-item text-muted text-center">El carrito está vacío.</li>';
+        cartTotal.textContent = "$0";
+        
+        if (cartNotificationBadge) {
+            cartNotificationBadge.classList.remove("active");
+        }
+    } else {
+        let total = 0;
+        
+        carritoGlobal.forEach((producto) => {
+            const cantidad = producto.cantidad || 1;
+            const subtotal = producto.precio * cantidad;
+            total += subtotal;
+            
+            const item = document.createElement("li");
+            item.className = "dropdown-item d-flex align-items-center justify-content-between py-2";
+            item.innerHTML = `
+                <div class="d-flex align-items-center flex-grow-1">
+                    <img src="${producto.imagen || 'https://via.placeholder.com/40'}" 
+                         width="40" height="40" 
+                         class="rounded me-2" 
+                         style="object-fit: cover;">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">${producto.nombre}</div>
+                        <small class="text-muted">
+                            ${cantidad} x $${producto.precio.toLocaleString('es-CL')}
+                        </small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger ms-2" 
+                        onclick="eliminarDelCarritoDropdown('${producto._id}')" 
+                        title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            cartProductsContainer.appendChild(item);
+        });
+        
+        cartTotal.textContent = `$${total.toLocaleString('es-CL')}`;
+        
+        if (cartNotificationBadge) {
+            cartNotificationBadge.classList.add("active");
+        }
+    }
+}
+
+// Eliminar del carrito desde dropdown
+async function eliminarDelCarritoDropdown(idProducto) {
+    try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        const url = usuarioEmail 
+            ? `http://127.0.0.1:8000/carrito/${idProducto}?usuario_email=${encodeURIComponent(usuarioEmail)}`
+            : `http://127.0.0.1:8000/carrito/${idProducto}`;
+        
+        const response = await fetch(url, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            carritoGlobal = carritoGlobal.filter(p => p._id !== idProducto);
+            sessionStorage.setItem("carrito", JSON.stringify(carritoGlobal));
+            actualizarDropdownCarrito();
+            aplicarFiltros();
+            
+            console.log("Producto eliminado del carrito");
+        } else {
+            alert("Error al eliminar el producto ❌");
+        }
+    } catch (error) {
+        console.error("Error al eliminar del carrito:", error);
+    }
+}
+
+// Verificar si está en carrito
+function estaEnCarrito(nombre) {
+    return carritoGlobal.some(p => p.nombre === nombre);
+}
+
+// Verificar si está en favoritos
+function estaEnFavoritos(nombre) {
+    return favoritosGlobal.some(f => f.nombre === nombre);
+}
+
+// ========================================
+// SISTEMA DE PRODUCTOS Y FILTROS
+// ========================================
+
+let filtroActual = {
+    precio: 'todos',
+    categoria: 'todas'
+};
+
+let productosOriginales = [];
+
+// Cargar productos desde backend
 async function cargarProductos() {
-    console.log("cargando productos...");
+    console.log("Cargando productos...");
 
     try {
         const response = await fetch("http://127.0.0.1:8000/productos");
         const productos = await response.json();
-
+        
+        productosOriginales = productos;
         console.log("Productos obtenidos:", productos);
-
-        const contenedor = document.getElementById("productos-container");
-        contenedor.innerHTML = "";
-
-        // Cargar carrito
-        await cargarCarrito();
-
-        productos.forEach(prod => {
-            const card = document.createElement("div");
-            card.classList.add("col-md-4", "mb-4");
-
-            let claseEstado = "";
-            if (prod.estado === "Disponible") claseEstado = "badge-disponible";
-            else if (prod.estado === "Agotado") claseEstado = "badge-agotado";
-            else if (prod.estado === "Descontinuado") claseEstado = "badge-reposicion";
-            else claseEstado = "badge-secondary";
-
-            const agregado = carritoSesion.includes(prod._id);
-
-            // Escapar comillas en nombre e imagen
-            const nombreEscapado = prod.nombre.replace(/'/g, "\\'");
-            const imagenEscapada = (prod.imagen || '').replace(/'/g, "\\'");
-
-            card.innerHTML = `
-                <div class="card shadow-sm h-100">
-                    <img src="${prod.imagen || 'https://via.placeholder.com/300'}" class="card-img-top" alt="${nombreEscapado}">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">${nombreEscapado}</h5>
-                        <p class="card-text text-success fw-bold">$${prod.precio}</p>
-                        <p class="text-muted">${prod.categoria}</p>
-                        <span class="badge ${claseEstado} mb-2">${prod.estado || "N/A"}</span>
-                        <br>
-                        <button class="btn ${agregado ? "btn-success" : "btn-outline-success"}"
-                            ${agregado || prod.estado !== "Disponible" ? "disabled" : ""}
-                            onclick="agregarAlCarrito('${prod._id}', '${nombreEscapado}', ${prod.precio}, '${imagenEscapada}', this)">
-                            ${agregado ? "😽 Agregado" : '<i class="fas fa-shopping-cart"></i> Agregar al carrito'}
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            contenedor.appendChild(card);
-        });
+        
+        aplicarFiltros();
 
     } catch (error) {
         console.error("Error al cargar productos:", error);
+        alert("Error al cargar los productos. Verifica que el backend esté corriendo.");
     }
 }
 
-async function cargarCarrito() {
-    try {
-        const res = await fetch("http://127.0.0.1:8000/carrito");
-        carritoSesion = (await res.json()).map(item => item._id);
-        console.log("Carrito cargado:", carritoSesion);
-    } catch (error) {
-        console.error("Error al cargar el carrito:", error);
+// Aplicar filtros
+function aplicarFiltros() {
+    let productosFiltrados = [...productosOriginales];
+
+    if (filtroActual.precio !== 'todos') {
+        productosFiltrados = productosFiltrados.filter(prod => {
+            switch(filtroActual.precio) {
+                case 'bajo':
+                    return prod.precio >= 0 && prod.precio <= 10000;
+                case 'medio':
+                    return prod.precio >= 11000 && prod.precio <= 30000;
+                case 'alto':
+                    return prod.precio > 30000;
+                default:
+                    return true;
+            }
+        });
+    }
+
+    if (filtroActual.categoria !== 'todas') {
+        productosFiltrados = productosFiltrados.filter(prod => 
+            prod.categoria.toLowerCase() === filtroActual.categoria.toLowerCase()
+        );
+    }
+
+    renderizarProductos(productosFiltrados);
+}
+
+// Renderizar productos
+function renderizarProductos(productos) {
+    const contenedor = document.getElementById("productos-container");
+    contenedor.innerHTML = "";
+
+    if (productos.length === 0) {
+        contenedor.innerHTML = `
+            <div class="col-12 text-center">
+                <p class="text-muted fs-4">No se encontraron productos con los filtros seleccionados 😢</p>
+            </div>
+        `;
+        return;
+    }
+
+    productos.forEach(prod => {
+        const card = document.createElement("div");
+        card.classList.add("col");
+
+        let claseEstado = "";
+        if (prod.estado === "Disponible") claseEstado = "bg-success";
+        else if (prod.estado === "Agotado") claseEstado = "bg-danger";
+        else if (prod.estado === "Descontinuado") claseEstado = "bg-warning text-dark";
+        else claseEstado = "bg-secondary";
+
+        const agregado = estaEnCarrito(prod.nombre);
+        const esFavorito = estaEnFavoritos(prod.nombre);
+
+        const nombreEscapado = prod.nombre.replace(/'/g, "\\'");
+        const imagenEscapada = (prod.imagen || '').replace(/'/g, "\\'");
+        const categoriaEscapada = prod.categoria.replace(/'/g, "\\'");
+
+        card.innerHTML = `
+            <div class="card product-card shadow-sm border-0">
+                <img src="${prod.imagen || 'https://via.placeholder.com/300'}" 
+                     class="card-img-top" 
+                     alt="${nombreEscapado}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold">${nombreEscapado}</h5>
+                    <p class="card-text text-muted">${prod.categoria}</p>
+                    <span class="badge ${claseEstado} fs-7 py-1 px-2 mb-2">${prod.estado || "N/A"}</span>
+                    <p class="fs-4 text-success mt-auto fw-bold">$${prod.precio.toLocaleString('es-CL')}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-success ${agregado || prod.estado !== "Disponible" ? 'disabled' : ''}" 
+                                id="btn-${prod._id}"
+                                ${agregado || prod.estado !== "Disponible" ? "disabled" : ""}
+                                onclick="agregarAlCarrito('${prod._id}', '${nombreEscapado}', ${prod.precio}, '${imagenEscapada}')">
+                            <i class="fas fa-cart-plus me-1"></i> 
+                            ${agregado ? 'En el carrito' : 'Añadir al carrito'}
+                        </button>
+                        <button class="btn btn-link btn-favorite p-0" 
+                                id="fav-${prod._id}"
+                                onclick="toggleFavorito('${prod._id}', '${nombreEscapado}', ${prod.precio}, '${categoriaEscapada}', '${imagenEscapada}', '${prod.estado}')"
+                                title="${esFavorito ? 'Eliminar de favoritos' : 'Agregar a favoritos'}">
+                            <i class="${esFavorito ? 'fas' : 'far'} fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        contenedor.appendChild(card);
+    });
+}
+
+// Toggle favorito (agregar o eliminar)
+async function toggleFavorito(id, nombre, precio, categoria, imagen, estado) {
+    const esFavorito = estaEnFavoritos(nombre);
+    
+    if (esFavorito) {
+        // Eliminar de favoritos
+        const favoritoId = favoritosGlobal.find(f => f.nombre === nombre)?._id;
+        if (favoritoId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/favoritos/${favoritoId}`, {
+                    method: "DELETE"
+                });
+
+                if (response.ok) {
+                    favoritosGlobal = favoritosGlobal.filter(f => f._id !== favoritoId);
+                    
+                    // Actualizar botón
+                    const botonFav = document.getElementById(`fav-${id}`);
+                    if (botonFav) {
+                        const icon = botonFav.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                        botonFav.title = 'Agregar a favoritos';
+                    }
+                    
+                    console.log("Eliminado de favoritos:", nombre);
+                } else {
+                    alert("Error al eliminar de favoritos ❌");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+    } else {
+        // Agregar a favoritos
+        try {
+            const usuarioEmail = obtenerUsuarioEmail();
+            if (!usuarioEmail) {
+                alert("Por favor, inicia sesión para agregar favoritos");
+                return;
+            }
+            
+            const productoData = { 
+                nombre, 
+                precio, 
+                categoria,
+                imagen,
+                estado,
+                usuario_email: usuarioEmail
+            };
+            
+            console.log("Enviando producto a favoritos:", productoData);
+            
+            const response = await fetch("http://127.0.0.1:8000/favoritos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(productoData)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log("Respuesta del servidor:", result);
+                
+                favoritosGlobal.push({
+                    _id: result._id,
+                    nombre,
+                    precio,
+                    categoria,
+                    imagen,
+                    estado
+                });
+                
+                // Actualizar botón
+                const botonFav = document.getElementById(`fav-${id}`);
+                if (botonFav) {
+                    const icon = botonFav.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    }
+                    botonFav.title = 'Eliminar de favoritos';
+                }
+                
+                console.log("Producto agregado a favoritos exitosamente:", nombre);
+                alert(`"${nombre}" agregado a favoritos ❤️`);
+            } else {
+                const errorData = await response.json();
+                console.error("Error del servidor:", errorData);
+                alert(errorData.detail || "Error al agregar a favoritos ❌");
+            }
+        } catch (error) {
+            console.error("Error al agregar a favoritos:", error);
+            alert("Error al agregar a favoritos. Verifica que el backend esté corriendo.");
+        }
     }
 }
 
-async function agregarAlCarrito(id, nombre, precio, imagen, boton) {
+// Agregar al carrito
+async function agregarAlCarrito(id, nombre, precio, imagen) {
     try {
+        const usuarioEmail = obtenerUsuarioEmail();
+        if (!usuarioEmail) {
+            alert("Por favor, inicia sesión para agregar productos al carrito");
+            return;
+        }
+        
+        const productoExistente = carritoGlobal.find(p => p.nombre === nombre);
+        
+        if (productoExistente) {
+            alert("Este producto ya está en tu carrito 🛒");
+            return;
+        }
+        
         const response = await fetch("http://127.0.0.1:8000/carrito", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre, precio, imagen })
+            body: JSON.stringify({ 
+                nombre, 
+                precio, 
+                imagen,
+                cantidad: 1,
+                usuario_email: usuarioEmail
+            })
         });
 
         if (response.ok) {
             const result = await response.json();
-            carritoSesion.push(result._id);
-            sessionStorage.setItem("carrito", JSON.stringify(carritoSesion));
-
-            boton.innerHTML = "😽 Agregado";
-            boton.classList.remove("btn-outline-success");
-            boton.classList.add("btn-success");
-            boton.disabled = true;
+            
+            carritoGlobal.push({
+                _id: result._id,
+                nombre,
+                precio,
+                imagen,
+                cantidad: 1
+            });
+            
+            sessionStorage.setItem("carrito", JSON.stringify(carritoGlobal));
+            actualizarDropdownCarrito();
+            
+            const boton = document.getElementById(`btn-${id}`);
+            if (boton) {
+                boton.innerHTML = "😽 Agregado";
+                boton.classList.remove("btn-outline-success");
+                boton.classList.add("btn-success");
+                boton.disabled = true;
+            }
+            
+            console.log("Producto agregado:", nombre);
         } else {
             alert("No se pudo agregar el producto al carrito ❌");
         }
     } catch (error) {
         console.error("Error al agregar al carrito:", error);
+        alert("Error al agregar al carrito");
     }
 }
 
-function removerDelCarrito(id) {
-    let carrito = JSON.parse(sessionStorage.getItem("carrito")) || [];
-    carrito = carrito.filter(pid => pid !== id);
-    sessionStorage.setItem("carrito", JSON.stringify(carrito));
-    cargarProductos(); // Re-renderiza los botones
+// Actualizar botones de precio
+function actualizarBotonesPrecio(botonActivo) {
+    const botones = document.querySelectorAll('.btn-group[aria-label="Filtro de Precio Rápido"] button');
+    botones.forEach(btn => {
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-success');
+    });
+    botonActivo.classList.remove('btn-outline-success');
+    botonActivo.classList.add('btn-success');
 }
 
-// Ejecuta la carga al inicio
-document.addEventListener("DOMContentLoaded", cargarProductos);
-</script>
+// ========================================
+// INICIALIZACIÓN
+// ========================================
 
+// --- Función para verificar si el usuario es super usuario ---
+function esSuperUsuario() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object') {
+                    if (usuarioObj.correo) {
+                        usuarioEmail = usuarioObj.correo;
+                        localStorage.setItem("usuarioEmail", usuarioEmail);
+                    }
+                    // Verificar si tiene la propiedad es_super_usuario
+                    if (usuarioObj.es_super_usuario === true) {
+                        return true;
+                    }
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    // Verificar por email directamente
+    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
+    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+}
+
+// --- Función para mostrar/ocultar enlaces del navbar según sesión ---
+function actualizarEnlacesNavbar() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    let esSuperUser = esSuperUsuario();
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                    if (usuarioObj.es_super_usuario === true) {
+                        esSuperUser = true;
+                    }
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    // Portal de empleados: visible solo super usuario
+    const portalEmpleados = document.getElementById("nav-portal-empleados");
+    if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
+
+    // Historial de pedidos: visible si hay sesión (o super)
+    const historialPedidos = document.getElementById("nav-historial-pedidos");
+    if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
+
+    // Análisis de ventas: solo super usuario
+    const analisisVentas = document.getElementById("nav-analisis-ventas");
+    if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
+
+    // Botón Administrar productos: solo super usuario
+    const btnAdministrar = document.getElementById("btn-administrar-productos");
+    if (btnAdministrar) btnAdministrar.style.display = esSuperUser ? "" : "none";
+    
+    // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
+    const inicioSesion = document.getElementById("nav-inicio-sesion");
+    const registro = document.getElementById("nav-registro");
+    
+    if (usuarioEmail) {
+        // Si hay sesión, ocultar registro e inicio sesión
+        if (inicioSesion) inicioSesion.style.display = "none";
+        if (registro) registro.style.display = "none";
+    } else {
+        // Si no hay sesión, mostrar registro e inicio sesión
+        if (inicioSesion) inicioSesion.style.display = "";
+        if (registro) registro.style.display = "";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async function() {
+    // Actualizar visibilidad de enlaces del navbar según sesión
+    actualizarEnlacesNavbar();
+    console.log("Iniciando aplicación...");
+    
+    // Inicializar carrito y favoritos
+    await inicializarCarrito();
+    await inicializarFavoritos();
+    
+    // Cargar productos
+    cargarProductos();
+    
+    // Filtros de precio
+    const botonesPrecio = document.querySelectorAll('.btn-group[aria-label="Filtro de Precio Rápido"] button');
+    
+    if (botonesPrecio.length > 0) {
+        botonesPrecio[0].addEventListener('click', function() {
+            filtroActual.precio = 'todos';
+            actualizarBotonesPrecio(this);
+            aplicarFiltros();
+        });
+        
+        botonesPrecio[1].addEventListener('click', function() {
+            filtroActual.precio = 'bajo';
+            actualizarBotonesPrecio(this);
+            aplicarFiltros();
+        });
+        
+        botonesPrecio[2].addEventListener('click', function() {
+            filtroActual.precio = 'medio';
+            actualizarBotonesPrecio(this);
+            aplicarFiltros();
+        });
+        
+        botonesPrecio[3].addEventListener('click', function() {
+            filtroActual.precio = 'alto';
+            actualizarBotonesPrecio(this);
+            aplicarFiltros();
+        });
+    }
+
+    // Filtros de categoría
+    const itemsCategoria = document.querySelectorAll('#dropdownCategoria + .dropdown-menu .dropdown-item');
+    
+    itemsCategoria.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const categoria = this.textContent.trim();
+            filtroActual.categoria = categoria;
+            document.getElementById('dropdownCategoria').textContent = `Categoría: ${categoria}`;
+            aplicarFiltros();
+        });
+    });
+    
+    console.log("Aplicación iniciada correctamente");
+});
+
+</script>
+<script src="js/carrito-global.js"></script>
 </body>
 </html>

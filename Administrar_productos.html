@@ -10,7 +10,7 @@
 /* Estilos generales */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #e9ecef;
+    background-color: #dddddd;
     padding: 20px;
 }
 .container-main {
@@ -134,8 +134,8 @@ img.product-thumb {
           <li class="nav-item"><a class="nav-link" href="Productos.html">Productos</a></li>
           <li class="nav-item"><a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a></li>
           <li class="nav-item"><a class="nav-link" href="Registro.html">Regístrate</a></li>
-          <li class="nav-item"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
-          <li class="nav-item"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
+          <li class="nav-item" id="nav-portal-empleados" style="display: none;"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
+          <li class="nav-item" id="nav-historial-pedidos" style="display: none;"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
         </ul>
        </div>
 </nav>
@@ -195,7 +195,7 @@ img.product-thumb {
                                 <option value="" disabled selected>Seleccione categoría</option>
                                 <option value="Bebidas">Bebidas</option>
                                 <option value="Postres">Postres</option>
-                                <option value="Panadería">Sandwich</option>
+                                <option value="Sandwich">Sandwich</option>
                             </select>
                         </div>
                     </div>
@@ -404,11 +404,101 @@ function limpiarFormulario() {
 // Filtrar productos
 filtroNombre.addEventListener("input", renderTabla);
 
+// --- Función para verificar si el usuario es super usuario ---
+function esSuperUsuario() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object') {
+                    if (usuarioObj.correo) {
+                        usuarioEmail = usuarioObj.correo;
+                        localStorage.setItem("usuarioEmail", usuarioEmail);
+                    }
+                    if (usuarioObj.es_super_usuario === true) {
+                        return true;
+                    }
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
+    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+}
+
+function verificarSesion() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    if (!usuarioEmail) {
+        alert("Debes iniciar sesión para acceder a esta página");
+        window.location.href = "Inicio_Sesion.html";
+        return false;
+    }
+    
+    // Verificar que sea super usuario
+    if (!esSuperUsuario()) {
+        alert("No tienes permisos para acceder a esta página. Solo el administrador puede acceder.");
+        window.location.href = "Index.html";
+        return false;
+    }
+    
+    return true;
+}
+
+// --- Función para mostrar/ocultar enlaces del navbar según sesión ---
+function actualizarEnlacesNavbar() {
+    let esSuperUser = esSuperUsuario();
+    
+    // Mostrar/ocultar enlaces solo si es super usuario
+    const portalEmpleados = document.getElementById("nav-portal-empleados");
+    const historialPedidos = document.getElementById("nav-historial-pedidos");
+    
+    if (esSuperUser) {
+        if (portalEmpleados) portalEmpleados.style.display = "";
+        if (historialPedidos) historialPedidos.style.display = "";
+    } else {
+        if (portalEmpleados) portalEmpleados.style.display = "none";
+        if (historialPedidos) historialPedidos.style.display = "none";
+    }
+}
+
 // Cargar al iniciar
 document.addEventListener("DOMContentLoaded", function() {
+    if (!verificarSesion()) {
+        return;
+    }
+    actualizarEnlacesNavbar();
     cargarProductos();
 });
 </script>
+<script src="js/carrito-global.js"></script>
 
 
 </body>

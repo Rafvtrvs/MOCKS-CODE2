@@ -179,6 +179,88 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ========================================
+// VERIFICACIÓN DE SESIÓN
+// ========================================
+
+function esSuperUsuario() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object') {
+                    if (usuarioObj.correo) {
+                        usuarioEmail = usuarioObj.correo;
+                        localStorage.setItem("usuarioEmail", usuarioEmail);
+                    }
+                    if (usuarioObj.es_super_usuario === true) {
+                        return true;
+                    }
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
+    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+}
+
+function verificarSesion() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
+    
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+    
+    if (!usuarioEmail) {
+        alert("Debes iniciar sesión para acceder a esta página");
+        window.location.href = "Inicio_Sesion.html";
+        return false;
+    }
+    
+    // Verificar que sea super usuario
+    if (!esSuperUsuario()) {
+        alert("No tienes permisos para acceder a esta página. Solo el administrador puede acceder.");
+        window.location.href = "Index.html";
+        return false;
+    }
+    
+    return true;
+}
+
+// Verificar sesión al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    if (!verificarSesion()) {
+        return; // Detener la ejecución si no hay sesión
+    }
+
+    // Actualizar navbar según sesión / super usuario
+    if (typeof actualizarEnlacesNavbar === 'function') {
+        try { actualizarEnlacesNavbar(); } catch(e) {}
+    }
+
     // JS BÁSICO: Este script solo simula el filtro para mostrar un aspecto interactivo
     document.getElementById('btnBuscar').addEventListener('click', () => {
         const fecha = document.getElementById('filtroFecha').value;
@@ -197,6 +279,8 @@
         console.log(mensaje);
         alert(`${mensaje}. (Lógica de filtrado avanzada no implementada en este demo.)`);
     });
+}); // Cierre del DOMContentLoaded
 </script>
+<script src="js/carrito-global.js"></script>
 </body>
 </html>
