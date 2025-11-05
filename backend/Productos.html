@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libre y Rico - Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Estilos generales para esta página */
+        html { height: 100%; }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa; /* Fondo gris claro */
+        }
+        .content-wrapper { flex: 1; }
+        footer { flex-shrink: 0; }
+
+        .card-img-top {
+            height: 200px;
+            width: 100%;   
+            object-fit: fill; 
+            border-top-left-radius: 0.25rem;  /* Mantener bordes redondeados */
+            border-top-right-radius: 0.25rem;
+        }
+        /* Estilo para los indicadores de estado */
+        .badge-disponible {
+            background-color: green; /* Verde */
+        }
+        .badge-agotado {
+            background-color: #dc3545; /* Rojo */
+        }
+        .badge-reposicion {
+            background-color: #ffc107; /* Amarillo */
+            color: #212529; /* Texto oscuro para contraste */
+        }
+
+        /* Estilo para los botones de Favoritos (simulando tu estilo anterior) */
+        .btn-favorito {
+            background-color: #dc3545; /* Marrón tierra */
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-favorito:hover {
+            background-color: #dc3545 !important; /* Rojo más oscuro al hacer hover */
+            border-color: #dc3545 !important;
+            color: rgb(247, 244, 244) !important;
+            transform: scale(1.02); /* Mantiene tu efecto de escala */
+            transition: all 0.3s ease;
+        }
+
+        .btn-exito {
+            background-color: #198754; /* Marrón más suave */
+            border-color: #198754;
+            color: white;
+        }
+        .btn-exito:hover {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: rgb(247, 244, 244) !important;
+            transform: scale(1.02); /* Hace el botón un poco más grande */
+            transition: all 0.3s ease; /* Transición suave */
+        }
+
+        .nav-link i {
+            transition: all 0.3s ease; /* Transición suave */
+        }
+
+        .nav-link i:hover {
+            color: #28a745;
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            color: #28a745;
+            cursor: pointer;
+        }
+
+        .dropdown-item {
+            transition: all 0.1s ease;
+        }
+
+        .dropdown-item:hover {
+            cursor: pointer;
+        }
+
+        .social-icon-link {
+            text-decoration: none !important;
+        }
+
+        .product-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%; /* Asegura que todas las cards tengan la misma altura */
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Estilo para el punto de notificación roja del carrito */
+        .cart-notification-dot {
+            /* Diseño del punto */
+            height: 10px;
+            width: 10px;
+            background-color: #dc3545; /* Rojo de Bootstrap (danger) */
+            border-radius: 50%;
+
+            /* Posicionamiento */
+            position: absolute;
+            top: 3px; /* Ajusta la posición verticalmente */
+            right: 0px; /* Ajusta la posición horizontalmente */
+            border: 1px solid white; /* Borde blanco para que se vea mejor */
+
+            /* Inicialmente oculto */
+            display: none;
+        }
+
+        /* Clase para mostrar el punto */
+        .cart-notification-dot.active {
+            display: block;
+        }
+
+        /* El ícono del carrito debe ser el contenedor relativo */
+        .position-relative {
+            position: relative !important;
+        }
+
+        /* NUEVO: Estilo para el botón "Administrar Productos" */
+        .btn-admin {
+            background-color:  #198754; /* Azul primario de Bootstrap para hacerlo destacar */
+            border-color:  #198754;
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-admin:hover {
+            background-color:  #198754 !important;
+            border-color:  #198754 !important;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="content-wrapper">
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold fs-3 text-success" href="Index.html">LIBRE & RICO</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="Index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link active text-success" href="Productos.html">Productos</a></li>
+          <li class="nav-item"><a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="Registro.html">Regístrate</a></li>
+          <li class="nav-item"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
+          <li class="nav-item"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
+        </ul>
+
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a class="nav-link text-success" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-shopping-cart fa-lg position-relative"></i>
+              <span class="cart-notification-dot" id="cart-notification-badge"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown" id="cart-items-container" style="min-width: 300px;">
+              <li class="dropdown-header text-center">🛒 Carrito de Compras</li>
+              <div id="cart-products">
+                <li class="dropdown-item text-muted text-center" id="empty-cart-message">El carrito está vacío.</li>
+              </div>
+              <li><hr class="dropdown-divider"></li>
+              <li class="d-flex justify-content-between p-2 fw-bold bg-light">
+                <span class="text-success">Total:</span>
+                <span id="cart-total" class="text-success">$0.00</span>
+              </li>
+              <li class="p-2">
+                <a href="Carrito.html" class="btn btn-success w-100">Finalizar Compra</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item"><a class="nav-link text-success" href="Perfil.html"><i class="fas fa-user-circle fa-lg"></i></a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="favoritos.html"><i class="fa-solid fa-heart fa-lg"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mt-5">
+    <h1 class="mb-4 display-4 text-center text-success">Catálogo Completo</h1>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 bg-light rounded shadow-sm">
+      <div class="btn-group me-3 mb-2" role="group" aria-label="Filtro de Precio Rápido">
+        <button type="button" class="btn btn-outline-success">Precio: Todos</button>
+        <button type="button" class="btn btn-outline-success">$0 - $10.000</button>
+        <button type="button" class="btn btn-outline-success">$11.000 - $30.000</button>
+        <button type="button" class="btn btn-outline-success">+$30.000</button>
+      </div>
+
+      <a href="Administrar_Productos.html" class="btn btn-admin mb-2 me-3">
+        <i class="fas fa-cogs me-2"></i>Administrar Productos
+      </a>
+
+      <div class="dropdown me-3 mb-2">
+        <button class="btn btn-success dropdown-toggle" type="button" id="dropdownOrdenar" data-bs-toggle="dropdown" aria-expanded="false">
+          Ordenar por
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownOrdenar">
+          <li><a class="dropdown-item" href="#">Más Vendidos</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#">Precio: Más Bajo</a></li>
+          <li><a class="dropdown-item" href="#">Precio: Más Alto</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#">Novedades</a></li>
+        </ul>
+      </div>
+
+      <div class="dropdown mb-2">
+        <button class="btn btn-success dropdown-toggle" type="button" id="dropdownCategoria" data-bs-toggle="dropdown" aria-expanded="false">
+          Categoría
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownCategoria">
+          <li><a class="dropdown-item" href="#">Sandwich</a></li>
+          <li><a class="dropdown-item" href="#">Bebidas</a></li>
+          <li><a class="dropdown-item" href="#">Postres</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container py-5">
+      <h2 class="text-center text-success mb-4">Nuestros Productos</h2>
+      <div class="row" id="productos-container">
+        <!-- Aquí se insertarán los productos desde el backend -->
+      </div>
+    </div>
+  </main>
+
+</div>
+
+
+<!--FOOTER-->
+   <footer class="bg-success text-white p-4">
+    <div class="container text-center">
+        <p>&copy; 2025 Libre y Rico. Todos los derechos reservados.</p>
+        <div class="mt-3">
+            <h5 class="text-uppercase">Síguenos</h5>
+            <a href="https://www.instagram.com/rafvtrvs" target="_blank" class="text-white mx-2 social-icon-link">
+                <i class="fab fa-instagram fa-lg"></i>
+                <span class="visually-hidden">Instagram</span>
+            </a>
+            <a href="#" target="_blank" class="text-white mx-2 social-icon-link"> 
+                <i class="fab fa-facebook fa-lg"></i>
+                <span class="visually-hidden">Facebook</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<script>
+let carritoSesion = []; // Variable global para el carrito
+
+async function cargarProductos() {
+    console.log("cargando productos...");
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/productos");
+        const productos = await response.json();
+
+        console.log("Productos obtenidos:", productos);
+
+        const contenedor = document.getElementById("productos-container");
+        contenedor.innerHTML = "";
+
+        // Cargar carrito
+        await cargarCarrito();
+
+        productos.forEach(prod => {
+            const card = document.createElement("div");
+            card.classList.add("col-md-4", "mb-4");
+
+            let claseEstado = "";
+            if (prod.estado === "Disponible") claseEstado = "badge-disponible";
+            else if (prod.estado === "Agotado") claseEstado = "badge-agotado";
+            else if (prod.estado === "Descontinuado") claseEstado = "badge-reposicion";
+            else claseEstado = "badge-secondary";
+
+            const agregado = carritoSesion.includes(prod._id);
+
+            // Escapar comillas en nombre e imagen
+            const nombreEscapado = prod.nombre.replace(/'/g, "\\'");
+            const imagenEscapada = (prod.imagen || '').replace(/'/g, "\\'");
+
+            card.innerHTML = `
+                <div class="card shadow-sm h-100">
+                    <img src="${prod.imagen || 'https://via.placeholder.com/300'}" class="card-img-top" alt="${nombreEscapado}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">${nombreEscapado}</h5>
+                        <p class="card-text text-success fw-bold">$${prod.precio}</p>
+                        <p class="text-muted">${prod.categoria}</p>
+                        <span class="badge ${claseEstado} mb-2">${prod.estado || "N/A"}</span>
+                        <br>
+                        <button class="btn ${agregado ? "btn-success" : "btn-outline-success"}"
+                            ${agregado || prod.estado !== "Disponible" ? "disabled" : ""}
+                            onclick="agregarAlCarrito('${prod._id}', '${nombreEscapado}', ${prod.precio}, '${imagenEscapada}', this)">
+                            ${agregado ? "😽 Agregado" : '<i class="fas fa-shopping-cart"></i> Agregar al carrito'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            contenedor.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Error al cargar productos:", error);
+    }
+}
+
+async function cargarCarrito() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/carrito");
+        carritoSesion = (await res.json()).map(item => item._id);
+        console.log("Carrito cargado:", carritoSesion);
+    } catch (error) {
+        console.error("Error al cargar el carrito:", error);
+    }
+}
+
+async function agregarAlCarrito(id, nombre, precio, imagen, boton) {
+    try {
+        const response = await fetch("http://127.0.0.1:8000/carrito", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre, precio, imagen })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            carritoSesion.push(result._id);
+            sessionStorage.setItem("carrito", JSON.stringify(carritoSesion));
+
+            boton.innerHTML = "😽 Agregado";
+            boton.classList.remove("btn-outline-success");
+            boton.classList.add("btn-success");
+            boton.disabled = true;
+        } else {
+            alert("No se pudo agregar el producto al carrito ❌");
+        }
+    } catch (error) {
+        console.error("Error al agregar al carrito:", error);
+    }
+}
+
+function removerDelCarrito(id) {
+    let carrito = JSON.parse(sessionStorage.getItem("carrito")) || [];
+    carrito = carrito.filter(pid => pid !== id);
+    sessionStorage.setItem("carrito", JSON.stringify(carrito));
+    cargarProductos(); // Re-renderiza los botones
+}
+
+// Ejecuta la carga al inicio
+document.addEventListener("DOMContentLoaded", cargarProductos);
+</script>
+
+</body>
+</html>

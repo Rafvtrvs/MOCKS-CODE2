@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador Avanzado de Productos - Libre & Rico</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e9ecef;
+    padding: 20px;
+}
+.container-main {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+h2 {
+    color: #198754;
+    border-bottom: 2px solid #198754;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: normal; /* Asegurar que no esté en negrita por defecto */
+}
+
+/* Acciones y Filtrado */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+#filtroNombre {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    width: 300px;
+}
+/* Tabla */
+.table-responsive {
+    margin-top: 20px;
+}
+/* Agregamos de vuelta la regla para el fondo y el color de texto de las celdas de datos */
+.table-responsive td { 
+    color: #495057; /* Texto color gris oscuro para legibilidad */
+    font-weight: normal;
+}
+
+/* Encabezados de la tabla (<th>) */
+th {
+    /* ✨ SOLUCIÓN: Agregamos el color de fondo verde */
+    background-color: #198754 !important;
+    color: white !important; 
+    font-weight: normal;
+}
+.acciones-tabla button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+}
+img.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* Modal (Formulario) */
+.modal-body .row > div {
+    margin-bottom: 15px;
+}
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+.is-invalid + .invalid-feedback {
+    display: block;
+}
+
+/* SOBREESCRITURA PARA EL SELECT: ANULAR HOVER/FOCUS AZUL Y REEMPLAZAR POR GRIS */
+.form-select:focus {
+    border-color: #6c757d !important; 
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25) !important; 
+}
+
+.form-select.is-invalid:focus {
+    border-color: #6c757d !important; 
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25) !important; 
+}
+
+.form-select.is-invalid {
+    border-color: #adb5bd !important; 
+    padding-right: 0.75rem !important; 
+    background-image: none !important; 
+}
+
+.nav-link i {
+            transition: all 0.3s ease; /* Transición suave */
+ }
+
+.nav-link i:hover {
+            color: #28a745;
+            transform: scale(1.3);
+            cursor: pointer;
+ }        
+.nav-link:hover {
+            color: #28a745;
+            cursor: pointer;
+ }
+
+</style>
+</head>
+<body>
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold fs-3 text-success" href="Index.html">LIBRE & RICO</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="Index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="Productos.html">Productos</a></li>
+          <li class="nav-item"><a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="Registro.html">Regístrate</a></li>
+          <li class="nav-item"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
+          <li class="nav-item"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
+        </ul>
+       </div>
+</nav>
+<div class="container-main">
+    <h2 class = "text-success"><i class="bi bi-gear-fill"></i> Administrador de Productos Avanzado</h2>
+
+    <div class="header-actions text-success">
+        <button class="btn btn-success" id="btnAgregar" data-bs-toggle="modal" data-bs-target="#productoModal">
+            <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
+        </button>
+        <input type="text" id="filtroNombre" placeholder="Buscar por Nombre o Categoría...">
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-tag-fill"></i> Producto</th>
+                    <th><i class="bi bi-cash-stack"></i> Precio</th>
+                    <th><i class="bi bi-list-task"></i> Categoría</th>
+                    <th><i class="bi bi-image-fill"></i> Imagen</th>
+                    <th><i class="bi bi-tools"></i> Estado</th>
+                    <th><i class="bi bi-tools"></i> Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaProductos">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="productoModalLabel">Gestión de Producto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="nombre" class="form-label">Nombre:</label>
+                            <input type="text" id="nombre" class="form-control" required>
+                            <div class="invalid-feedback" id="feedback-nombre">El nombre es obligatorio.</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="precio" class="form-label">Precio ($):</label>
+                            <input type="number" id="precio" class="form-control" step="1" required>
+                            <div class="invalid-feedback" id="feedback-precio">El precio debe ser un número positivo.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="categoria" class="form-label">Categoría:</label>
+                            <select id="categoria" class="form-select" required>
+                                <option value="" disabled selected>Seleccione categoría</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Postres">Postres</option>
+                                <option value="Panadería">Sandwich</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label for="estado" class="form-label">Estado:</label>
+                        <select id="estado" class="form-select" required>
+                         <option value="" disabled selected>Seleccione estado</option>
+                         <option value="Disponible">Disponible</option>
+                         <option value="Agotado">Agotado</option>
+                         <option value="Descontinuado">Descontinuado</option>
+                        </select>
+                        <div class="invalid-feedback" id="feedback-estado">Debes seleccionar un estado.</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="imagen" class="form-label">URL Imagen:</label>
+                            <input type="url" id="imagen" class="form-control">
+                            <small class="form-text text-muted">Ej: https://ejemplo.com/foto.jpg</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" id="guardarProducto"><i class="bi bi-save"></i> Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let productos = [];
+let editIndex = null;
+
+// Inputs del formulario
+const nombreInput = document.getElementById("nombre");
+const precioInput = document.getElementById("precio");
+const categoriaInput = document.getElementById("categoria");
+const imagenInput = document.getElementById("imagen");
+const estadoInput = document.getElementById("estado"); // Nuevo dropdown
+const guardarProductoBtn = document.getElementById("guardarProducto");
+const productoModalEl = document.getElementById("productoModal");
+const productoModal = new bootstrap.Modal(productoModalEl);
+const tablaProductos = document.getElementById("tablaProductos");
+const filtroNombre = document.getElementById("filtroNombre");
+
+// Renderizar tabla
+function renderTabla() {
+    tablaProductos.innerHTML = "";
+    const filtro = filtroNombre.value.toLowerCase();
+
+    productos
+        .filter(p =>
+            p.nombre.toLowerCase().includes(filtro) ||
+            p.categoria.toLowerCase().includes(filtro)
+        )
+        .forEach((p, index) => {
+            const fila = `
+                <tr>
+                    <td>${p.nombre}</td>
+                    <td>$${p.precio}</td>
+                    <td>${p.categoria}</td>
+                    <td><img src="${p.imagen || 'https://via.placeholder.com/60'}" class="product-thumb"></td>
+                    <td>${p.estado || ""}</td>
+                    <td class="acciones-tabla">
+                        <button class="btn btn-sm btn-warning" onclick="editarProducto(${index})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${index})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            tablaProductos.insertAdjacentHTML("beforeend", fila);
+        });
+}
+
+// Validar formulario
+function validarFormulario() {
+    let valido = true;
+
+    if (!nombreInput.value.trim()) {
+        nombreInput.classList.add("is-invalid");
+        valido = false;
+    } else {
+        nombreInput.classList.remove("is-invalid");
+    }
+
+    if (precioInput.value <= 0 || !precioInput.value) {
+        precioInput.classList.add("is-invalid");
+        valido = false;
+    } else {
+        precioInput.classList.remove("is-invalid");
+    }
+
+    if (!categoriaInput.value) {
+        categoriaInput.classList.add("is-invalid");
+        valido = false;
+    } else {
+        categoriaInput.classList.remove("is-invalid");
+    }
+
+    if (!estadoInput.value) {
+        estadoInput.classList.add("is-invalid");
+        valido = false;
+    } else {
+        estadoInput.classList.remove("is-invalid");
+    }
+
+    return valido;
+}
+
+// Cargar productos desde backend
+async function cargarProductos() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/productos");
+        productos = await res.json();
+        renderTabla();
+    } catch (error) {
+        console.error("Error cargando productos:", error);
+    }
+}
+
+// Guardar producto
+guardarProductoBtn.addEventListener("click", async () => {
+    if (!validarFormulario()) return;
+
+    const productoData = {
+        nombre: nombreInput.value.trim(),
+        precio: parseFloat(precioInput.value),
+        categoria: categoriaInput.value,
+        imagen: imagenInput.value.trim(),
+        estado: estadoInput.value // siempre tendrá el valor del dropdown
+    };
+
+
+    try {
+        if (editIndex !== null) {
+            const productoId = productos[editIndex]._id;
+            await fetch(`http://127.0.0.1:8000/productos/${productoId}`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(productoData)
+            });
+            alert("✅ Producto actualizado correctamente");
+        } else {
+            await fetch("http://127.0.0.1:8000/productos", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(productoData)
+            });
+            alert("✅ Producto agregado correctamente");
+        }
+
+        productoModal.hide();
+        limpiarFormulario();
+        editIndex = null;
+        await cargarProductos();
+    } catch (error) {
+        console.error("Error guardando producto:", error);
+        alert("❌ Error al guardar el producto");
+    }
+});
+
+// Editar producto
+window.editarProducto = function (index) {
+    editIndex = index;
+    const producto = productos[index];
+    nombreInput.value = producto.nombre;
+    precioInput.value = producto.precio;
+    categoriaInput.value = producto.categoria;
+    imagenInput.value = producto.imagen || "";
+    estadoInput.value = producto.estado || "Disponible"; // Cargar estado
+    document.getElementById("productoModalLabel").textContent = "Editar Producto";
+    productoModal.show();
+};
+
+// Eliminar producto
+window.eliminarProducto = async function (index) {
+    const producto = productos[index];
+    if (confirm(`⚠️ ¿Eliminar "${producto.nombre}"?`)) {
+        try {
+            await fetch(`http://127.0.0.1:8000/productos/${producto._id}`, {
+                method: "DELETE"
+            });
+            alert("🗑️ Producto eliminado correctamente");
+            await cargarProductos();
+        } catch (error) {
+            console.error("Error eliminando producto:", error);
+            alert("❌ Error al eliminar el producto");
+        }
+    }
+};
+
+// Limpiar formulario
+function limpiarFormulario() {
+    nombreInput.value = "";
+    precioInput.value = "";
+    categoriaInput.value = "";
+    imagenInput.value = "";
+    estadoInput.value = "Disponible"; // ✅ valor por defecto
+    nombreInput.classList.remove("is-invalid");
+    precioInput.classList.remove("is-invalid");
+    categoriaInput.classList.remove("is-invalid");
+    estadoInput.classList.remove("is-invalid");
+    document.getElementById("productoModalLabel").textContent = "Agregar Producto";
+}
+
+// Filtrar productos
+filtroNombre.addEventListener("input", renderTabla);
+
+// Cargar al iniciar
+document.addEventListener("DOMContentLoaded", function() {
+    cargarProductos();
+});
+</script>
+
+
+</body>
+</html>
