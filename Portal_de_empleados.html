@@ -71,10 +71,10 @@
                 <li class="nav-item">
                     <a class="nav-link" href="Productos.html">Productos</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="nav-inicio-sesion">
                     <a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a>
                 </li>
-                 <li class="nav-item">
+                 <li class="nav-item" id="nav-registro">
                     <a class="nav-link" href="Registro.html">Registrate</a>
                 </li>
                  <li class="nav-item">
@@ -82,6 +82,12 @@
                 </li>
                 <li class="nav-item" id="nav-analisis-ventas" style="display: none;">
                     <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
+                </li>
+                <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
+                    <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
+                </li>
+                <li class="nav-item" id="nav-administrar-productos" style="display: none;">
+                    <a class="nav-link" href="Administrar_productos.html">Administrar Productos</a>
                 </li>
             </ul>
               <ul class="navbar-nav">
@@ -266,8 +272,18 @@ function esSuperUsuario() {
         }
     }
     
-    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
-    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+    if (!usuarioEmail) {
+        return false;
+    }
+    
+    const SUPER_USUARIOS = [
+        "rafaarodriguezjr@gmail.com",
+        "alguien@example.com"
+    ];
+    const emailNormalizado = usuarioEmail.toLowerCase().trim();
+    const esSuper = SUPER_USUARIOS.some(e => e.toLowerCase() === emailNormalizado);
+    console.log("Verificación superusuario:", { usuarioEmail, emailNormalizado, esSuper });
+    return esSuper;
 }
 
 function verificarSesion() {
@@ -309,15 +325,51 @@ function verificarSesion() {
 
 // --- Función para mostrar/ocultar enlaces del navbar según sesión ---
 function actualizarEnlacesNavbar() {
+    let usuarioEmail = localStorage.getItem("usuarioEmail");
     let esSuperUser = esSuperUsuario();
-    
-    // Mostrar/ocultar enlaces solo si es super usuario
+    if (!usuarioEmail) {
+        const usuarioLocal = localStorage.getItem("usuario");
+        if (usuarioLocal) {
+            try {
+                const usuarioObj = JSON.parse(usuarioLocal);
+                if (usuarioObj && typeof usuarioObj === 'object' && usuarioObj.correo) {
+                    usuarioEmail = usuarioObj.correo;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            } catch (e) {
+                if (usuarioLocal.includes("@")) {
+                    usuarioEmail = usuarioLocal;
+                    localStorage.setItem("usuarioEmail", usuarioEmail);
+                }
+            }
+        }
+    }
+
+    // Portal de empleados: visible solo super usuario (esta página ya lo es)
+    const portalEmpleados = document.getElementById("nav-portal-empleados");
+    if (portalEmpleados) portalEmpleados.style.display = esSuperUser ? "" : "none";
+
+    // Historial de pedidos: visible si hay sesión (o super)
+    const historialPedidos = document.getElementById("nav-historial-pedidos");
+    if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
+
+    // Análisis de ventas: solo super usuario
     const analisisVentas = document.getElementById("nav-analisis-ventas");
-    
-    if (esSuperUser) {
-        if (analisisVentas) analisisVentas.style.display = "";
+    if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
+
+    // Administrar productos: solo super usuario
+    const adminProductos = document.getElementById("nav-administrar-productos");
+    if (adminProductos) adminProductos.style.display = esSuperUser ? "" : "none";
+
+    // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
+    const inicioSesion = document.getElementById("nav-inicio-sesion");
+    const registro = document.getElementById("nav-registro");
+    if (usuarioEmail) {
+        if (inicioSesion) inicioSesion.style.display = "none";
+        if (registro) registro.style.display = "none";
     } else {
-        if (analisisVentas) analisisVentas.style.display = "none";
+        if (inicioSesion) inicioSesion.style.display = "";
+        if (registro) registro.style.display = "";
     }
 }
 

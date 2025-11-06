@@ -209,8 +209,18 @@ function esSuperUsuario() {
         }
     }
     
-    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
-    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+    if (!usuarioEmail) {
+        return false;
+    }
+    
+    const SUPER_USUARIOS = [
+        "rafaarodriguezjr@gmail.com",
+        "alguien@example.com"
+    ];
+    const emailNormalizado = usuarioEmail.toLowerCase().trim();
+    const esSuper = SUPER_USUARIOS.some(e => e.toLowerCase() === emailNormalizado);
+    console.log("Verificación superusuario:", { usuarioEmail, emailNormalizado, esSuper });
+    return esSuper;
 }
 
 function verificarSesion() {

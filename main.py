@@ -24,6 +24,7 @@ carrito_col = db["carrito"]
 favoritos_col = db["favoritos"]  # Nueva colección para favoritos
 usuarios_col = db["usuarios"]  # Colección para usuarios
 empleados_col = db["empleados"]  # Colección para portal de empleados
+cupones_col = db["cupones"]  # Colección opcional para cupones (no usada en básico)
 
 # --- Helper para convertir ObjectId ---
 def serializar_producto(prod):
@@ -75,9 +76,14 @@ def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 def es_super_usuario(correo: str) -> bool:
-    """Verifica si un usuario es super usuario"""
-    SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com"
-    return correo.lower() == SUPER_USUARIO_EMAIL.lower()
+    if not correo:
+        return False
+    correo_normalizado = correo.lower()
+    super_correos = {
+        "rafaarodriguezjr@gmail.com",
+        "alguien@example.com",
+    }
+    return correo_normalizado in super_correos
 
 # --- PRODUCTOS ---
 @app.get("/productos")
@@ -360,3 +366,100 @@ async def cambiar_password(correo: str, datos: dict = Body(...)):
     await usuarios_col.update_one({"correo": correo}, {"$set": {"password_hash": nuevo_hash}})
 
     return {"message": "Contraseña actualizada exitosamente"}
+
+# --- CUPONES ---
+@app.get("/cupones/{codigo}")
+async def validar_cupon(codigo: str):
+    """Valida un cupón y retorna su efecto. Implementación básica con lista blanca.
+    tipos soportados: free_shipping, percent (value=0-100), fixed (value en CLP)
+    """
+    codigo_norm = (codigo or "").strip().upper()
+    cupones = {
+        "LIBREENVIO": {"type": "free_shipping", "label": "Envío gratis"},
+        "ENVIOGRATIS": {"type": "free_shipping", "label": "Envío gratis"},
+        "DESCUENTO10": {"type": "percent", "value": 10, "label": "10% de descuento"},
+        "MENOS2000": {"type": "fixed", "value": 2000, "label": "$2.000 de descuento"},
+    }
+    data = cupones.get(codigo_norm)
+    if not data:
+        raise HTTPException(status_code=404, detail="Cupón inválido o expirado")
+    return {"code": codigo_norm, **data}
+
+# --- MEDIOS DE PAGO POR USUARIO ---
+@app.get("/usuarios/{correo}/medios_pago")
+async def listar_medios_pago(correo: str):
+    usuario = await usuarios_col.find_one({"correo": correo})
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    medios = usuario.get("medios_pago", [])
+    # Normalizar _id a string si existen
+    for m in medios:
+        if isinstance(m.get("_id"), ObjectId):
+            m["_id"] = str(m["_id"])
+    return medios
+
+@app.post("/usuarios/{correo}/medios_pago")
+async def agregar_medio_pago(correo: str, medio: dict = Body(...)):
+    """Agrega un medio de pago al usuario. No almacena el número completo, solo últimos 4 y máscara."""
+    usuario = await usuarios_col.find_one({"correo": correo})
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    tipo = (medio.get("tipo") or "tarjeta").lower()
+    titular = medio.get("titular", "")
+    numero = (medio.get("numero") or "").replace(" ", "")
+    vencimiento = medio.get("vencimiento", "")  # formato MM/AA
+    marca = medio.get("marca", "")
+
+    if tipo == "tarjeta":
+        if not numero or len(numero) < 12:
+            raise HTTPException(status_code=400, detail="Número de tarjeta inválido")
+        last4 = numero[-4:]
+        numero_enmascarado = "**** **** **** " + last4
+    else:
+        last4 = ""
+        numero_enmascarado = ""
+
+    nuevo_medio = {
+        "_id": ObjectId(),
+        "tipo": tipo,
+        "titular": titular,
+        "marca": marca,
+        "vencimiento": vencimiento,
+        "numero_enmascarado": numero_enmascarado,
+        "last4": last4
+    }
+
+    await usuarios_col.update_one(
+        {"correo": correo},
+        {"$push": {"medios_pago": nuevo_medio}}
+    )
+
+    nuevo_medio["_id"] = str(nuevo_medio["_id"])  # serializar
+    return {"message": "Medio de pago agregado", "medio": nuevo_medio}
+
+@app.put("/usuarios/{correo}/medios_pago/{medio_id}")
+async def actualizar_medio_pago(correo: str, medio_id: str, cambios: dict = Body(...)):
+    """Actualiza campos editables del medio de pago (titular, marca, vencimiento)."""
+    campos_permitidos = {"titular", "marca", "vencimiento"}
+    set_data = {k: v for k, v in cambios.items() if k in campos_permitidos}
+    if not set_data:
+        raise HTTPException(status_code=400, detail="No hay campos válidos para actualizar")
+
+    result = await usuarios_col.update_one(
+        {"correo": correo, "medios_pago._id": ObjectId(medio_id)},
+        {"$set": {**{f"medios_pago.$.{k}": v for k, v in set_data.items()}}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Medio de pago no encontrado")
+    return {"message": "Medio de pago actualizado"}
+
+@app.delete("/usuarios/{correo}/medios_pago/{medio_id}")
+async def eliminar_medio_pago(correo: str, medio_id: str):
+    result = await usuarios_col.update_one(
+        {"correo": correo},
+        {"$pull": {"medios_pago": {"_id": ObjectId(medio_id)}}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Medio de pago no encontrado")
+    return {"message": "Medio de pago eliminado"}

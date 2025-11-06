@@ -132,8 +132,7 @@ img.product-thumb {
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="Index.html">Inicio</a></li>
           <li class="nav-item"><a class="nav-link" href="Productos.html">Productos</a></li>
-          <li class="nav-item"><a class="nav-link" href="Inicio_Sesion.html">Inicio Sesión</a></li>
-          <li class="nav-item"><a class="nav-link" href="Registro.html">Regístrate</a></li>
+          
           <li class="nav-item" id="nav-portal-empleados" style="display: none;"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
           <li class="nav-item" id="nav-historial-pedidos" style="display: none;"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
         </ul>
@@ -431,8 +430,18 @@ function esSuperUsuario() {
         }
     }
     
-    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
-    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+    if (!usuarioEmail) {
+        return false;
+    }
+    
+    const SUPER_USUARIOS = [
+        "rafaarodriguezjr@gmail.com",
+        "alguien@example.com"
+    ];
+    const emailNormalizado = usuarioEmail.toLowerCase().trim();
+    const esSuper = SUPER_USUARIOS.some(e => e.toLowerCase() === emailNormalizado);
+    console.log("Verificación superusuario:", { usuarioEmail, emailNormalizado, esSuper });
+    return esSuper;
 }
 
 function verificarSesion() {

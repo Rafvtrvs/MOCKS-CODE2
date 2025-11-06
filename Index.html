@@ -145,6 +145,9 @@
                  <li class="nav-item" id="nav-analisis-ventas" style="display: none;">
                     <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
                 </li>
+                <li class="nav-item" id="nav-administrar-productos" style="display: none;">
+                    <a class="nav-link" href="Administrar_productos.html">Administrar Productos</a>
+                </li>
             </ul>
               <ul class="navbar-nav">
                 <li class="nav-item dropdown">
@@ -656,8 +659,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
-        return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+        const SUPER_USUARIOS = [
+            "rafaarodriguezjr@gmail.com",
+            "alguien@example.com"
+        ];
+        return usuarioEmail && SUPER_USUARIOS.some(e => e.toLowerCase() === usuarioEmail.toLowerCase());
     }
 
     // --- Función para mostrar/ocultar enlaces del navbar según sesión ---
@@ -697,6 +703,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Análisis de ventas: solo super usuario
         const analisisVentas = document.getElementById("nav-analisis-ventas");
         if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
+        // Administrar productos: solo super usuario
+        const adminProductos = document.getElementById("nav-administrar-productos");
+        if (adminProductos) adminProductos.style.display = esSuperUser ? "" : "none";
         
         // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
         const inicioSesion = document.getElementById("nav-inicio-sesion");

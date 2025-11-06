@@ -195,7 +195,8 @@ function actualizarEnlacesNavbar() {
         try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
     }
     if (!esSuperUser && usuarioEmail) {
-        esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
+        const SUPER_USUARIOS = ["rafaarodriguezjr@gmail.com", "alguien@example.com"];
+        esSuperUser = SUPER_USUARIOS.some(e => e.toLowerCase() === usuarioEmail.toLowerCase());
     }
 
     // Portal de empleados: visible solo super usuario

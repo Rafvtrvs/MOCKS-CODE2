@@ -120,6 +120,18 @@
                 <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
                     <a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
+                <li class="nav-item" id="nav-analisis-ventas" style="display: none;">
+                    <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
+                </li>
+                <li class="nav-item" id="nav-administrar-productos" style="display: none;">
+                    <a class="nav-link" href="Administrar_productos.html">Administrar Productos</a>
+                </li>
+                <li class="nav-item" id="nav-analisis-ventas" style="display: none;">
+                    <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
+                </li>
+                <li class="nav-item" id="nav-administrar-productos" style="display: none;">
+                    <a class="nav-link" href="Administrar_productos.html">Administrar Productos</a>
+                </li>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -168,7 +180,7 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
                             Descuento (Cupón)
-                            <span class="text-danger">$0</span>
+                            <span class="text-danger" id="descuento-display">$0</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
                             Costo de Envío
@@ -184,7 +196,7 @@
                         <label for="couponCode" class="form-label small text-muted">Código de Cupón</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="couponCode" placeholder="Ingresa tu cupón">
-                            <button class="btn btn-outline-success" type="button">Aplicar</button>
+                            <button class="btn btn-outline-success" id="apply-coupon-btn" type="button">Aplicar</button>
                         </div>
                     </div>
                     
@@ -254,6 +266,7 @@ async function cargarCarrito() {
   
   const respuesta = await fetch(url);
   const productos = await respuesta.json();
+  productosActuales = productos; // Guardar productos globalmente
 
   const contenedor = document.getElementById("cart-items-list");
   contenedor.innerHTML = "";
@@ -301,6 +314,7 @@ async function cargarCarrito() {
       p.cantidad++;
       inputCantidad.value = p.cantidad;
       precioSpan.textContent = `$${(p.precio * p.cantidad).toLocaleString('es-CL')}`;
+      productosActuales = productos; // Actualizar productos globales
       actualizarResumen(productos);
     });
 
@@ -309,6 +323,7 @@ async function cargarCarrito() {
         p.cantidad--;
         inputCantidad.value = p.cantidad;
         precioSpan.textContent = `$${(p.precio * p.cantidad).toLocaleString('es-CL')}`;
+        productosActuales = productos; // Actualizar productos globales
         actualizarResumen(productos);
       }
     });
@@ -317,15 +332,87 @@ async function cargarCarrito() {
   actualizarResumen(productos); // actualiza resumen al final
 }
 
+let cuponAplicado = null; // { code, type, value }
+let productosActuales = []; // Mantener productos actuales
+
 // Función para actualizar subtotal y total
 function actualizarResumen(productos) {
-  let subtotal = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
-  let envio = subtotal > 0 ? 3000 : 0; // ejemplo de envío fijo
-  let total = subtotal + envio;
+  if (!productos || !Array.isArray(productos)) {
+    productos = [];
+  }
+  
+  let subtotal = productos.reduce((acc, p) => {
+    const precio = parseFloat(p.precio) || 0;
+    const cantidad = parseInt(p.cantidad) || 1;
+    return acc + (precio * cantidad);
+  }, 0);
+  
+  let envio = subtotal > 0 ? 3000 : 0; // envío base
+  let descuento = 0;
+
+  if (cuponAplicado) {
+    if (cuponAplicado.type === 'free_shipping') {
+      envio = 0;
+    } else if (cuponAplicado.type === 'percent') {
+      const percentValue = parseFloat(cuponAplicado.value) || 0;
+      descuento = Math.floor((subtotal * percentValue) / 100);
+    } else if (cuponAplicado.type === 'fixed') {
+      const fixedValue = parseFloat(cuponAplicado.value) || 0;
+      descuento = Math.min(subtotal, fixedValue);
+    }
+  }
+
+  let total = Math.max(0, subtotal - descuento) + envio;
+
+  // Validar que los valores sean números válidos
+  subtotal = isNaN(subtotal) ? 0 : subtotal;
+  descuento = isNaN(descuento) ? 0 : descuento;
+  envio = isNaN(envio) ? 0 : envio;
+  total = isNaN(total) ? 0 : total;
 
   document.getElementById("subtotal-display").textContent = `$${subtotal.toLocaleString('es-CL')}`;
-  document.getElementById("shipping-cost-display").textContent = envio > 0 ? `$${envio.toLocaleString('es-CL')}` : "$0";
-  document.getElementById("final-total-display").textContent = `$${total.toLocaleString('es-CL')}`;
+  const shippingEl = document.getElementById("shipping-cost-display");
+  if (cuponAplicado && cuponAplicado.type === 'free_shipping') {
+    shippingEl.textContent = "$0 (con cupón)";
+  } else {
+    shippingEl.textContent = envio > 0 ? `$${envio.toLocaleString('es-CL')}` : "$0";
+  }
+  
+  // Actualizar línea de descuento
+  const descuentoEl = document.getElementById("descuento-display");
+  if (descuentoEl) {
+    descuentoEl.textContent = descuento > 0 ? `-$${descuento.toLocaleString('es-CL')}` : "$0";
+  }
+  
+  const totalEl = document.getElementById("final-total-display");
+  if (totalEl) {
+    totalEl.textContent = `$${total.toLocaleString('es-CL')}`;
+  }
+}
+
+// Aplicar cupón
+async function aplicarCupon() {
+  const input = document.getElementById('couponCode');
+  const code = (input.value || '').trim();
+  if (!code) { 
+    alert('Ingresa un código de cupón'); 
+    return; 
+  }
+  try {
+    const resp = await fetch(`http://127.0.0.1:8000/cupones/${encodeURIComponent(code)}`);
+    if (!resp.ok) {
+      const data = await resp.json().catch(()=>({detail:'Cupón inválido'}));
+      alert(data.detail || 'Cupón inválido');
+      return;
+    }
+    cuponAplicado = await resp.json();
+    // Recalcular con productos actuales
+    actualizarResumen(productosActuales);
+    alert(`✅ Cupón aplicado: ${cuponAplicado.label || cuponAplicado.code}`);
+  } catch (e) {
+    console.error('Error validando cupón', e);
+    alert('Error al validar el cupón');
+  }
 }
 
 function cambiarCantidad(index, delta) {
@@ -385,7 +472,8 @@ function actualizarEnlacesNavbar() {
         try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
     }
     if (!esSuperUser && usuarioEmail) {
-        esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
+        const SUPER_USUARIOS = ["rafaarodriguezjr@gmail.com", "alguien@example.com"];
+        esSuperUser = SUPER_USUARIOS.some(e => e.toLowerCase() === usuarioEmail.toLowerCase());
     }
 
     // Portal de empleados: visible solo super usuario
@@ -395,6 +483,14 @@ function actualizarEnlacesNavbar() {
     // Historial de pedidos: visible si hay sesión (o super)
     const historialPedidos = document.getElementById("nav-historial-pedidos");
     if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
+    
+    // Análisis de ventas: solo super usuario
+    const analisisVentas = document.getElementById("nav-analisis-ventas");
+    if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
+
+    // Administrar productos: solo super usuario
+    const adminProductos = document.getElementById("nav-administrar-productos");
+    if (adminProductos) adminProductos.style.display = esSuperUser ? "" : "none";
     
     // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
     const inicioSesion = document.getElementById("nav-inicio-sesion");
@@ -413,6 +509,12 @@ function actualizarEnlacesNavbar() {
 
 window.onload = function() {
     actualizarEnlacesNavbar();
+    // Resetear cupón al cargar la página
+    cuponAplicado = null;
+    const couponInput = document.getElementById('couponCode');
+    if (couponInput) couponInput.value = '';
+    const btnApply = document.getElementById('apply-coupon-btn');
+    if (btnApply) btnApply.addEventListener('click', aplicarCupon);
     cargarCarrito();
 };
 </script>

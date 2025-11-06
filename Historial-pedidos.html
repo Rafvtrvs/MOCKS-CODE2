@@ -163,6 +163,12 @@
                 <li class="nav-item" id="nav-historial-pedidos" style="display: none;">
                     <a class="nav-link active text-success" href="Historial-pedidos.html">Historial de pedidos</a>
                 </li>
+                <li class="nav-item" id="nav-analisis-ventas" style="display: none;">
+                    <a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a>
+                </li>
+                <li class="nav-item" id="nav-administrar-productos" style="display: none;">
+                    <a class="nav-link" href="Administrar_productos.html">Administrar Productos</a>
+                </li>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
@@ -335,7 +341,8 @@ function verificarSesion() {
             try { const uObj = JSON.parse(uLocal); if (uObj && uObj.es_super_usuario === true) esSuperUser = true; } catch(e) {}
         }
         if (!esSuperUser && usuarioEmail) {
-            esSuperUser = usuarioEmail.toLowerCase() === "rafaarodriguezjr@gmail.com";
+            const SUPER_USUARIOS = ["rafaarodriguezjr@gmail.com", "alguien@example.com"];
+            esSuperUser = SUPER_USUARIOS.some(e => e.toLowerCase() === usuarioEmail.toLowerCase());
         }
 
         // Portal de empleados: visible solo super usuario
@@ -345,6 +352,14 @@ function verificarSesion() {
         // Historial de pedidos: visible si hay sesión (o super)
         const historialPedidos = document.getElementById("nav-historial-pedidos");
         if (historialPedidos) historialPedidos.style.display = (usuarioEmail || esSuperUser) ? "" : "none";
+
+        // Análisis de ventas: solo super usuario
+        const analisisVentas = document.getElementById("nav-analisis-ventas");
+        if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
+
+        // Administrar productos: solo super usuario
+        const adminProductos = document.getElementById("nav-administrar-productos");
+        if (adminProductos) adminProductos.style.display = esSuperUser ? "" : "none";
 
         // Ocultar enlaces de registro e inicio sesión si hay sesión iniciada
         const inicioSesion = document.getElementById("nav-inicio-sesion");

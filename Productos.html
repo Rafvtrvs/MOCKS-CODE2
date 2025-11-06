@@ -167,6 +167,8 @@
           <li class="nav-item" id="nav-registro"><a class="nav-link" href="Registro.html">Regístrate</a></li>
           <li class="nav-item" id="nav-portal-empleados" style="display: none;"><a class="nav-link" href="Portal_de_empleados.html">Portal de empleados</a></li>
           <li class="nav-item" id="nav-historial-pedidos" style="display: none;"><a class="nav-link" href="Historial-pedidos.html">Historial de pedidos</a></li>
+          <li class="nav-item" id="nav-analisis-ventas" style="display: none;"><a class="nav-link" href="Historial_pedidos.html">Análisis de Ventas</a></li>
+          <li class="nav-item" id="nav-administrar-productos" style="display: none;"><a class="nav-link" href="Administrar_productos.html">Administrar Productos</a></li>
         </ul>
 
         <ul class="navbar-nav">
@@ -762,8 +764,11 @@ function esSuperUsuario() {
     }
     
     // Verificar por email directamente
-    const SUPER_USUARIO_EMAIL = "rafaarodriguezjr@gmail.com";
-    return usuarioEmail && usuarioEmail.toLowerCase() === SUPER_USUARIO_EMAIL.toLowerCase();
+    const SUPER_USUARIOS = [
+        "rafaarodriguezjr@gmail.com",
+        "alguien@example.com"
+    ];
+    return usuarioEmail && SUPER_USUARIOS.some(e => e.toLowerCase() === usuarioEmail.toLowerCase());
 }
 
 // --- Función para mostrar/ocultar enlaces del navbar según sesión ---
@@ -804,7 +809,9 @@ function actualizarEnlacesNavbar() {
     const analisisVentas = document.getElementById("nav-analisis-ventas");
     if (analisisVentas) analisisVentas.style.display = esSuperUser ? "" : "none";
 
-    // Botón Administrar productos: solo super usuario
+    // Administrar productos: solo super usuario (navbar y botón de acción)
+    const adminProductosNav = document.getElementById("nav-administrar-productos");
+    if (adminProductosNav) adminProductosNav.style.display = esSuperUser ? "" : "none";
     const btnAdministrar = document.getElementById("btn-administrar-productos");
     if (btnAdministrar) btnAdministrar.style.display = esSuperUser ? "" : "none";
     
