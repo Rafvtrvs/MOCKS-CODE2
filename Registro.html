@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -128,8 +128,12 @@
 
     <div class="mb-3">
       <label for="domicilio" class="form-label">Domicilio *</label>
-      <input type="text" class="form-control" id="domicilio" placeholder="Ej: Calle 123">
+      <input type="text" class="form-control" id="domicilio" placeholder="Escribe tu dirección (mínimo 3 caracteres)">
       <div class="error-message" id="errorDomicilio">Este campo es obligatorio</div>
+      <small class="text-muted">Escribe tu dirección y selecciona una opción de las sugerencias</small>
+      <!-- Campos ocultos para coordenadas -->
+      <input type="hidden" id="latitud" name="latitud">
+      <input type="hidden" id="longitud" name="longitud">
     </div>
 
     <div class="mb-3">
@@ -227,9 +231,138 @@ function actualizarEnlacesNavbar() {
     }
 }
 
+// Autocompletado con Nominatim (OpenStreetMap) - GRATIS, sin API key
+let autocompleteTimeout;
+let autocompleteResults = [];
+let selectedResult = null;
+
+// Función para buscar direcciones con Nominatim
+async function buscarDireccionesNominatim(query) {
+    if (!query || query.length < 3) {
+        return [];
+    }
+    
+    try {
+        // API de Nominatim (gratis, sin API key)
+        const url = `https://nominatim.openstreetmap.org/search?` +
+            `q=${encodeURIComponent(query)}` +
+            `&format=json` +
+            `&limit=5` +
+            `&countrycodes=cl` + // Solo Chile
+            `&addressdetails=1`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'LibreYRico/1.0' // Requerido por Nominatim
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al buscar direcciones');
+        }
+        
+        const data = await response.json();
+        return data.map(item => ({
+            display_name: item.display_name,
+            lat: parseFloat(item.lat),
+            lon: parseFloat(item.lon),
+            address: item.address
+        }));
+    } catch (error) {
+        console.error('Error al buscar con Nominatim:', error);
+        return [];
+    }
+}
+
+// Función para mostrar sugerencias
+function mostrarSugerencias(sugerencias) {
+    const input = document.getElementById('domicilio');
+    const container = document.getElementById('sugerencias-direccion');
+    
+    // Limpiar sugerencias anteriores
+    if (container) {
+        container.remove();
+    }
+    
+    if (sugerencias.length === 0) {
+        return;
+    }
+    
+    // Crear contenedor de sugerencias
+    const sugerenciasDiv = document.createElement('div');
+    sugerenciasDiv.id = 'sugerencias-direccion';
+    sugerenciasDiv.className = 'list-group position-absolute w-100';
+    sugerenciasDiv.style.zIndex = '1000';
+    sugerenciasDiv.style.maxHeight = '200px';
+    sugerenciasDiv.style.overflowY = 'auto';
+    sugerenciasDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+    
+    sugerencias.forEach((sugerencia, index) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'list-group-item list-group-item-action';
+        item.textContent = sugerencia.display_name;
+        item.style.cursor = 'pointer';
+        
+        item.addEventListener('click', () => {
+            input.value = sugerencia.display_name;
+            document.getElementById('latitud').value = sugerencia.lat;
+            document.getElementById('longitud').value = sugerencia.lon;
+            selectedResult = sugerencia;
+            sugerenciasDiv.remove();
+            console.log('Dirección seleccionada:', sugerencia.display_name);
+            console.log('Coordenadas:', sugerencia.lat, sugerencia.lon);
+        });
+        
+        sugerenciasDiv.appendChild(item);
+    });
+    
+    // Insertar después del input
+    input.parentElement.style.position = 'relative';
+    input.parentElement.appendChild(sugerenciasDiv);
+}
+
+// Inicializar autocompletado con Nominatim
+function initAutocomplete() {
+    const input = document.getElementById('domicilio');
+    if (!input) return;
+    
+    // Limpiar timeout anterior
+    input.addEventListener('input', function(e) {
+        clearTimeout(autocompleteTimeout);
+        const query = e.target.value.trim();
+        
+        // Ocultar sugerencias si se borra el texto
+        const container = document.getElementById('sugerencias-direccion');
+        if (container) {
+            container.remove();
+        }
+        
+        if (query.length < 3) {
+            return;
+        }
+        
+        // Esperar 300ms después de que el usuario deje de escribir
+        autocompleteTimeout = setTimeout(async () => {
+            const sugerencias = await buscarDireccionesNominatim(query);
+            autocompleteResults = sugerencias;
+            mostrarSugerencias(sugerencias);
+        }, 300);
+    });
+    
+    // Ocultar sugerencias al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        const container = document.getElementById('sugerencias-direccion');
+        if (container && !container.contains(e.target) && e.target !== input) {
+            container.remove();
+        }
+    });
+}
+
 // Actualizar navbar al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     actualizarEnlacesNavbar();
+    initAutocomplete();
 });
 document.getElementById('registroForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -262,6 +395,10 @@ document.getElementById('registroForm').addEventListener('submit', async functio
     // Registrar usuario en MongoDB
     async function registrarUsuario() {
         try {
+            // Obtener coordenadas si están disponibles
+            const latitud = document.getElementById('latitud').value;
+            const longitud = document.getElementById('longitud').value;
+            
             const usuarioData = {
                 nombres,
                 apellidos,
@@ -271,6 +408,12 @@ document.getElementById('registroForm').addEventListener('submit', async functio
                 telefono,
                 password
             };
+            
+            // Agregar coordenadas si están disponibles
+            if (latitud && longitud) {
+                usuarioData.latitud = parseFloat(latitud);
+                usuarioData.longitud = parseFloat(longitud);
+            }
 
             const response = await fetch("http://127.0.0.1:8000/usuarios/registro", {
                 method: "POST",

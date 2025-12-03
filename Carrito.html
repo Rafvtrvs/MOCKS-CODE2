@@ -200,7 +200,7 @@
                         </div>
                     </div>
                     
-                    <button class="btn btn-success btn-lg w-100 mt-3 shadow-lg" type="button">
+                    <button class="btn btn-success btn-lg w-100 mt-3 shadow-lg" type="button" id="btn-proceder-pago">
                         <i class="fas fa-credit-card me-2"></i> Proceder al Pago
                     </button>
                     <small class="d-block text-center mt-2 text-muted">Transacción 100% segura.</small>
@@ -334,11 +334,40 @@ async function cargarCarrito() {
 
 let cuponAplicado = null; // { code, type, value }
 let productosActuales = []; // Mantener productos actuales
+let costoEnvioCalculado = 3000; // Costo de envío calculado según distancia
+let infoEnvio = null; // Información de distancia y envío
+
+// Calcular costo de envío según distancia
+async function calcularEnvio() {
+    const usuarioEmail = obtenerUsuarioEmail();
+    if (!usuarioEmail) {
+        costoEnvioCalculado = 3000; // Por defecto si no hay sesión
+        return;
+    }
+
+    try {
+        const resp = await fetch(`http://127.0.0.1:8000/ordenes/calcular-envio?usuario_email=${encodeURIComponent(usuarioEmail)}`);
+        if (resp.ok) {
+            infoEnvio = await resp.json();
+            costoEnvioCalculado = infoEnvio.costo || 3000;
+        } else {
+            costoEnvioCalculado = 3000; // Por defecto si falla
+        }
+    } catch (error) {
+        console.error('Error calculando envío:', error);
+        costoEnvioCalculado = 3000; // Por defecto si hay error
+    }
+}
 
 // Función para actualizar subtotal y total
-function actualizarResumen(productos) {
+async function actualizarResumen(productos) {
   if (!productos || !Array.isArray(productos)) {
     productos = [];
+  }
+  
+  // Calcular envío si no se ha calculado
+  if (costoEnvioCalculado === 3000 && !infoEnvio) {
+    await calcularEnvio();
   }
   
   let subtotal = productos.reduce((acc, p) => {
@@ -347,7 +376,7 @@ function actualizarResumen(productos) {
     return acc + (precio * cantidad);
   }, 0);
   
-  let envio = subtotal > 0 ? 3000 : 0; // envío base
+  let envio = subtotal > 0 ? costoEnvioCalculado : 0;
   let descuento = 0;
 
   if (cuponAplicado) {
@@ -374,6 +403,12 @@ function actualizarResumen(productos) {
   const shippingEl = document.getElementById("shipping-cost-display");
   if (cuponAplicado && cuponAplicado.type === 'free_shipping') {
     shippingEl.textContent = "$0 (con cupón)";
+  } else if (infoEnvio && infoEnvio.distancia_km !== null) {
+    // Mostrar información de distancia si está disponible
+    const distanciaText = infoEnvio.dentro_radio 
+      ? `Gratis (${infoEnvio.distancia_km} km)` 
+      : `$${envio.toLocaleString('es-CL')} (${infoEnvio.distancia_km} km)`;
+    shippingEl.textContent = envio > 0 ? distanciaText : "$0";
   } else {
     shippingEl.textContent = envio > 0 ? `$${envio.toLocaleString('es-CL')}` : "$0";
   }
@@ -507,7 +542,384 @@ function actualizarEnlacesNavbar() {
     }
 }
 
-window.onload = function() {
+// Función para proceder al pago
+async function procederAlPago() {
+    const usuarioEmail = obtenerUsuarioEmail();
+    if (!usuarioEmail) {
+        alert('Por favor, inicia sesión para continuar con el pago.');
+        window.location.href = 'Inicio_Sesion.html';
+        return;
+    }
+
+    // Verificar que hay productos en el carrito
+    if (productosActuales.length === 0) {
+        alert('Tu carrito está vacío.');
+        return;
+    }
+
+    // Calcular envío según distancia
+    await calcularEnvio();
+
+    // Calcular totales
+    let subtotal = productosActuales.reduce((acc, p) => {
+        const precio = parseFloat(p.precio) || 0;
+        const cantidad = parseInt(p.cantidad) || 1;
+        return acc + (precio * cantidad);
+    }, 0);
+
+    let envio = subtotal > 0 ? costoEnvioCalculado : 0;
+    let descuento = 0;
+
+    if (cuponAplicado) {
+        if (cuponAplicado.type === 'free_shipping') {
+            envio = 0;
+        } else if (cuponAplicado.type === 'percent') {
+            const percentValue = parseFloat(cuponAplicado.value) || 0;
+            descuento = Math.floor((subtotal * percentValue) / 100);
+        } else if (cuponAplicado.type === 'fixed') {
+            const fixedValue = parseFloat(cuponAplicado.value) || 0;
+            descuento = Math.min(subtotal, fixedValue);
+        }
+    }
+
+    const total = Math.max(0, subtotal - descuento) + envio;
+
+    try {
+        // Crear la orden (el backend calculará el envío si no se proporciona)
+        // Si hay cupón de envío gratis, forzar envio a 0
+        const ordenData = {
+            usuario_email: usuarioEmail,
+            descuento: descuento,
+            envio: (cuponAplicado && cuponAplicado.type === 'free_shipping') ? 0 : null, // null = calcular según distancia
+            cupon_codigo: cuponAplicado ? cuponAplicado.code : ""
+        };
+
+        const respOrden = await fetch('http://127.0.0.1:8000/ordenes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ordenData)
+        });
+
+        if (!respOrden.ok) {
+            const error = await respOrden.json().catch(() => ({ detail: 'Error al crear la orden' }));
+            alert(error.detail || 'Error al crear la orden');
+            return;
+        }
+
+        const ordenResult = await respOrden.json();
+        const ordenId = ordenResult.orden._id;
+
+        // Obtener medios de pago del usuario
+        const respMedios = await fetch(`http://127.0.0.1:8000/usuarios/${encodeURIComponent(usuarioEmail)}/medios_pago`);
+        const mediosPago = respMedios.ok ? await respMedios.json() : [];
+
+        // Si no tiene medios de pago, redirigir a agregar uno
+        if (mediosPago.length === 0) {
+            if (confirm('No tienes métodos de pago guardados. ¿Deseas agregar uno ahora?')) {
+                window.location.href = `Metodo_de_Pago.html?orden_id=${ordenId}`;
+            }
+            return;
+        }
+
+        // Mostrar modal para seleccionar medio de pago
+        mostrarModalPago(ordenId, mediosPago, total);
+
+    } catch (error) {
+        console.error('Error al procesar pago:', error);
+        alert('Error al procesar el pago. Por favor, intenta nuevamente.');
+    }
+}
+
+// Función para mostrar modal de selección de pago
+function mostrarModalPago(ordenId, mediosPago, total) {
+    // Crear modal dinámicamente
+    const modalHTML = `
+        <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalPagoLabel">
+                            <i class="fas fa-credit-card me-2"></i>Seleccionar Método de Pago
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Total a pagar: <span class="text-success fs-5">$${total.toLocaleString('es-CL')}</span></strong>
+                        </div>
+                        
+                        <!-- Pasarelas de pago rápidas -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">Pasarelas de Pago</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-primary w-100 p-3" id="btn-mercadopago" style="border: 2px solid #009ee3;">
+                                        <img src="https://imgmp.mlstatic.com/org-img/MP3/API/logos/mercadopago.png" alt="Mercado Pago" style="height: 30px; margin-right: 10px;">
+                                        <strong>Mercado Pago</strong>
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-dark w-100 p-3" id="btn-applepay" style="background: #000; border: 2px solid #000;">
+                                        <i class="fab fa-apple me-2" style="font-size: 1.5rem;"></i>
+                                        <strong>Apple Pay</strong>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Tarjetas guardadas -->
+                        <div class="mb-3">
+                            <h6 class="mb-3">Tarjetas Guardadas</h6>
+                            <div class="list-group" id="lista-medios-pago">
+                                ${mediosPago.length > 0 ? mediosPago.map((medio, index) => `
+                                    <label class="list-group-item">
+                                        <input class="form-check-input me-2" type="radio" name="medioPago" value="${medio._id}" ${index === 0 ? 'checked' : ''}>
+                                        <strong>${medio.tipo === 'tarjeta' ? (medio.marca || 'Tarjeta') + ' ' + medio.numero_enmascarado : 'Transferencia'}</strong>
+                                        <br>
+                                        <small class="text-muted">Titular: ${medio.titular || '-'}${medio.vencimiento ? ' · Vence: ' + medio.vencimiento : ''}</small>
+                                    </label>
+                                `).join('') : '<p class="text-muted text-center">No tienes tarjetas guardadas</p>'}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="Metodo_de_Pago.html" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-plus me-1"></i> Agregar nueva tarjeta
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="btn-confirmar-pago" style="display: none;">
+                            <i class="fas fa-check me-2"></i> Confirmar Pago
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remover modal anterior si existe
+    const modalAnterior = document.getElementById('modalPago');
+    if (modalAnterior) {
+        modalAnterior.remove();
+    }
+
+    // Agregar modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalPago'));
+    modal.show();
+
+    // Manejar Mercado Pago
+    document.getElementById('btn-mercadopago').addEventListener('click', () => {
+        simularMercadoPago(ordenId, total, modal);
+    });
+
+    // Manejar Apple Pay
+    document.getElementById('btn-applepay').addEventListener('click', () => {
+        simularApplePay(ordenId, total, modal);
+    });
+
+    // Manejar confirmación de pago con tarjeta guardada
+    const btnConfirmar = document.getElementById('btn-confirmar-pago');
+    if (mediosPago.length > 0) {
+        btnConfirmar.style.display = 'block';
+        btnConfirmar.addEventListener('click', async () => {
+            const medioSeleccionado = document.querySelector('input[name="medioPago"]:checked');
+            if (!medioSeleccionado) {
+                alert('Por favor, selecciona un método de pago');
+                return;
+            }
+
+            const medioPagoId = medioSeleccionado.value;
+            await procesarPagoTarjetaGuardada(ordenId, medioPagoId, modal);
+        });
+    }
+}
+
+// Simular integración con Mercado Pago
+function simularMercadoPago(ordenId, total, modal) {
+    // Crear modal de autenticación de Mercado Pago
+    const mpModalHTML = `
+        <div class="modal fade" id="modalMercadoPago" tabindex="-1" aria-labelledby="modalMercadoPagoLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #009ee3 0%, #0073b1 100%); color: white;">
+                        <h5 class="modal-title" id="modalMercadoPagoLabel">
+                            <img src="https://imgmp.mlstatic.com/org-img/MP3/API/logos/mercadopago.png" alt="Mercado Pago" style="height: 25px; margin-right: 10px;">
+                            Mercado Pago
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div id="mp-step-1">
+                            <i class="fas fa-lock fa-3x text-primary mb-3"></i>
+                            <h5>Iniciar sesión en Mercado Pago</h5>
+                            <p class="text-muted">Conectando con tu cuenta de Mercado Pago...</p>
+                            <div class="spinner-border text-primary mt-3" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                        <div id="mp-step-2" style="display: none;">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5>Autenticación exitosa</h5>
+                            <p class="text-muted">Procesando pago de $${total.toLocaleString('es-CL')}...</p>
+                            <div class="spinner-border text-success mt-3" role="status">
+                                <span class="visually-hidden">Procesando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remover modal anterior si existe
+    const mpModalAnterior = document.getElementById('modalMercadoPago');
+    if (mpModalAnterior) mpModalAnterior.remove();
+
+    document.body.insertAdjacentHTML('beforeend', mpModalHTML);
+    const mpModal = new bootstrap.Modal(document.getElementById('modalMercadoPago'));
+    mpModal.show();
+
+    // Simular proceso de autenticación y pago
+    setTimeout(() => {
+        document.getElementById('mp-step-1').style.display = 'none';
+        document.getElementById('mp-step-2').style.display = 'block';
+        
+        setTimeout(async () => {
+            mpModal.hide();
+            modal.hide();
+            
+            // Procesar pago simulado
+            await procesarPagoSimulado(ordenId, 'mercadopago');
+        }, 2000);
+    }, 2000);
+}
+
+// Simular integración con Apple Pay
+function simularApplePay(ordenId, total, modal) {
+    // Verificar si es compatible (simulado)
+    const isCompatible = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent) || true; // Siempre compatible para demo
+    
+    if (!isCompatible) {
+        alert('Apple Pay solo está disponible en dispositivos Apple');
+        return;
+    }
+
+    // Crear modal de Apple Pay
+    const apModalHTML = `
+        <div class="modal fade" id="modalApplePay" tabindex="-1" aria-labelledby="modalApplePayLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                    <div class="modal-header bg-dark text-white" style="border: none;">
+                        <h5 class="modal-title" id="modalApplePayLabel">
+                            <i class="fab fa-apple me-2"></i>Apple Pay
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center p-4">
+                        <div id="ap-step-1">
+                            <i class="fab fa-apple fa-3x mb-3"></i>
+                            <h6>Autenticación con Face ID</h6>
+                            <p class="text-muted small">Coloca tu dedo en el sensor</p>
+                            <div class="spinner-border spinner-border-sm text-dark mt-3" role="status">
+                                <span class="visually-hidden">Autenticando...</span>
+                            </div>
+                        </div>
+                        <div id="ap-step-2" style="display: none;">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h6>Pago autorizado</h6>
+                            <p class="text-muted small">$${total.toLocaleString('es-CL')}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const apModalAnterior = document.getElementById('modalApplePay');
+    if (apModalAnterior) apModalAnterior.remove();
+
+    document.body.insertAdjacentHTML('beforeend', apModalHTML);
+    const apModal = new bootstrap.Modal(document.getElementById('modalApplePay'));
+    apModal.show();
+
+    // Simular autenticación biométrica
+    setTimeout(() => {
+        document.getElementById('ap-step-1').style.display = 'none';
+        document.getElementById('ap-step-2').style.display = 'block';
+        
+        setTimeout(async () => {
+            apModal.hide();
+            modal.hide();
+            
+            // Procesar pago simulado
+            await procesarPagoSimulado(ordenId, 'applepay');
+        }, 1500);
+    }, 2000);
+}
+
+// Procesar pago con tarjeta guardada
+async function procesarPagoTarjetaGuardada(ordenId, medioPagoId, modal) {
+    try {
+        const respPago = await fetch(`http://127.0.0.1:8000/ordenes/${ordenId}/pagar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ medio_pago_id: medioPagoId })
+        });
+
+        if (!respPago.ok) {
+            const error = await respPago.json().catch(() => ({ detail: 'Error al procesar el pago' }));
+            alert(error.detail || 'Error al procesar el pago');
+            return;
+        }
+
+        const pagoResult = await respPago.json();
+        modal.hide();
+        
+        // Redirigir a página de confirmación
+        window.location.href = `confirmacion_pago.html?orden_id=${ordenId}`;
+
+    } catch (error) {
+        console.error('Error al confirmar pago:', error);
+        alert('Error al procesar el pago. Por favor, intenta nuevamente.');
+    }
+}
+
+// Procesar pago simulado (para Mercado Pago y Apple Pay)
+async function procesarPagoSimulado(ordenId, metodo) {
+    try {
+        const respPago = await fetch(`http://127.0.0.1:8000/ordenes/${ordenId}/pagar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                medio_pago_id: null,
+                metodo_pago: metodo // Agregar información del método usado
+            })
+        });
+
+        if (!respPago.ok) {
+            const error = await respPago.json().catch(() => ({ detail: 'Error al procesar el pago' }));
+            alert(error.detail || 'Error al procesar el pago');
+            return;
+        }
+
+        const pagoResult = await respPago.json();
+        
+        // Redirigir a página de confirmación
+        window.location.href = `confirmacion_pago.html?orden_id=${ordenId}`;
+
+    } catch (error) {
+        console.error('Error al procesar pago:', error);
+        alert('Error al procesar el pago. Por favor, intenta nuevamente.');
+    }
+}
+
+window.onload = async function() {
     actualizarEnlacesNavbar();
     // Resetear cupón al cargar la página
     cuponAplicado = null;
@@ -515,6 +927,15 @@ window.onload = function() {
     if (couponInput) couponInput.value = '';
     const btnApply = document.getElementById('apply-coupon-btn');
     if (btnApply) btnApply.addEventListener('click', aplicarCupon);
+    
+    // Agregar evento al botón de proceder al pago
+    const btnProcederPago = document.getElementById('btn-proceder-pago');
+    if (btnProcederPago) {
+        btnProcederPago.addEventListener('click', procederAlPago);
+    }
+    
+    // Calcular envío según distancia al cargar la página
+    await calcularEnvio();
     cargarCarrito();
 };
 </script>

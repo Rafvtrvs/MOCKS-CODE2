@@ -87,20 +87,20 @@
     <div class="row text-center">
         <div class="col-md-4">
             <div class="summary-card">
-                <div class="value" id="totalPedidos">145</div>
+                <div class="value" id="totalPedidos">0</div>
                 <div class="label"><i class="bi bi-box-seam"></i> Pedidos Totales</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="summary-card">
-                <div class="value" id="totalVentas">$ 1.850.400</div>
+                <div class="value" id="totalVentas">$ 0</div>
                 <div class="label"><i class="bi bi-cash-coin"></i> Ventas Acumuladas (CLP)</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="summary-card">
-                <div class="value" id="pedidosCompletados">138</div>
-                <div class="label"><i class="bi bi-check-circle-fill"></i> Completados / Cancelados (7)</div>
+                <div class="value" id="pedidosCompletados">0</div>
+                <div class="label"><i class="bi bi-check-circle-fill"></i> <span id="labelCompletados">Completados / Cancelados (0)</span></div>
             </div>
         </div>
     </div>
@@ -141,36 +141,13 @@
             </thead>
             <tbody id="tablaHistorialPedidos">
                 <tr>
-                    <td>#00101</td>
-                    <td>2024-10-21</td>
-                    <td>María López</td>
-                    <td>Café Latte (x2), Sandwich Vegano (x1)</td>
-                    <td>$ 8.900</td>
-                    <td><span class="badge bg-success"><i class="bi bi-check-lg"></i> Completado</span></td>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="text-muted mt-2">Cargando datos de ventas...</p>
+                    </td>
                 </tr>
-                 <tr>
-                    <td>#00102</td>
-                    <td>2024-10-21</td>
-                    <td>Juan Pérez</td>
-                    <td>Brownie Chocolate (x1)</td>
-                    <td>$ 1.800</td>
-                    <td><span class="badge bg-danger"><i class="bi bi-x-lg"></i> Cancelado</span></td>
-                </tr>
-                 <tr>
-                    <td>#00103</td>
-                    <td>2024-10-21</td>
-                    <td>Sofía Ríos</td>
-                    <td> Café Latte (x1), Brownie Chocolate (x1)</td>
-                    <td>$ 6.100</td>
-                    <td><span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pendiente</span></td>
-                </tr>
-                 <tr>
-                    <td>#00104</td>
-                    <td>2024-10-20</td>
-                    <td>Andrés Mora</td>
-                    <td>Café Latte (x1)</td>
-                    <td>$ 2.800</td>
-                    <td><span class="badge bg-success"><i class="bi bi-check-lg"></i> Completado</span></td>
             </tbody>
         </table>
     </div>
@@ -260,6 +237,148 @@ function verificarSesion() {
     return true;
 }
 
+// Variables globales
+let todasLasOrdenes = [];
+let ordenesFiltradas = [];
+
+// Cargar todas las órdenes desde el backend
+async function cargarTodasLasOrdenes() {
+    try {
+        const response = await fetch('http://127.0.0.1:8000/ordenes');
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar las órdenes');
+        }
+
+        todasLasOrdenes = await response.json();
+        ordenesFiltradas = [...todasLasOrdenes];
+        
+        // Actualizar estadísticas y tabla
+        actualizarEstadisticas();
+        renderizarTabla();
+        
+    } catch (error) {
+        console.error('Error al cargar órdenes:', error);
+        document.getElementById('tablaHistorialPedidos').innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-5 text-danger">
+                    <i class="bi bi-exclamation-circle"></i> Error al cargar los datos. Verifica que el backend esté corriendo.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Actualizar las estadísticas en las tarjetas
+function actualizarEstadisticas() {
+    const totalPedidos = todasLasOrdenes.length;
+    // Excluir pedidos cancelados de las ventas acumuladas
+    const totalVentas = todasLasOrdenes
+        .filter(o => o.estado !== 'cancelado') // Solo contar pedidos no cancelados
+        .reduce((sum, orden) => sum + (orden.total || 0), 0);
+    const pedidosCompletados = todasLasOrdenes.filter(o => o.estado === 'pagado').length;
+    const pedidosCancelados = todasLasOrdenes.filter(o => o.estado === 'cancelado').length;
+
+    document.getElementById('totalPedidos').textContent = totalPedidos;
+    document.getElementById('totalVentas').textContent = `$ ${totalVentas.toLocaleString('es-CL')}`;
+    document.getElementById('pedidosCompletados').textContent = pedidosCompletados;
+    document.getElementById('labelCompletados').innerHTML = `Completados / Cancelados (${pedidosCancelados})`;
+}
+
+// Renderizar la tabla con las órdenes
+function renderizarTabla() {
+    const tbody = document.getElementById('tablaHistorialPedidos');
+    
+    if (ordenesFiltradas.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox"></i> No hay pedidos para mostrar
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = ordenesFiltradas.map(orden => {
+        // Formatear fecha
+        const fecha = orden.fecha_creacion ? new Date(orden.fecha_creacion).toLocaleDateString('es-CL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }) : 'N/A';
+
+        // Formatear productos
+        const productosTexto = orden.productos.map(p => {
+            const cantidad = p.cantidad || 1;
+            return `${p.nombre} (x${cantidad})`;
+        }).join(', ');
+
+        // Determinar badge según estado
+        let badgeClass = 'bg-secondary';
+        let badgeIcon = 'bi-circle';
+        let estadoTexto = orden.estado || 'Pendiente';
+
+        if (orden.estado === 'pagado') {
+            badgeClass = 'bg-success';
+            badgeIcon = 'bi-check-lg';
+            estadoTexto = 'Completado';
+        } else if (orden.estado === 'cancelado') {
+            badgeClass = 'bg-danger';
+            badgeIcon = 'bi-x-lg';
+            estadoTexto = 'Cancelado';
+        } else if (orden.estado === 'pendiente') {
+            badgeClass = 'bg-warning text-dark';
+            badgeIcon = 'bi-hourglass-split';
+            estadoTexto = 'Pendiente';
+        }
+
+        // ID corto
+        const ordenIdCorto = orden._id.substring(0, 8).toUpperCase();
+
+        return `
+            <tr>
+                <td>#${ordenIdCorto}</td>
+                <td>${fecha}</td>
+                <td>${orden.usuario_email || 'N/A'}</td>
+                <td>${productosTexto || 'Sin productos'}</td>
+                <td>$ ${orden.total.toLocaleString('es-CL')}</td>
+                <td><span class="badge ${badgeClass}"><i class="bi ${badgeIcon}"></i> ${estadoTexto}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Aplicar filtros
+function aplicarFiltros() {
+    const fechaFiltro = document.getElementById('filtroFecha').value;
+    const estadoFiltro = document.getElementById('filtroEstado').value.toLowerCase();
+
+    ordenesFiltradas = todasLasOrdenes.filter(orden => {
+        // Filtro por fecha
+        if (fechaFiltro) {
+            const fechaOrden = orden.fecha_creacion ? new Date(orden.fecha_creacion).toISOString().split('T')[0] : '';
+            if (fechaOrden !== fechaFiltro) {
+                return false;
+            }
+        }
+
+        // Filtro por estado
+        if (estadoFiltro) {
+            let estadoOrden = (orden.estado || 'pendiente').toLowerCase();
+            // Mapear estados
+            if (estadoOrden === 'pagado') estadoOrden = 'completado';
+            if (estadoFiltro === 'completado' && estadoOrden !== 'completado') return false;
+            if (estadoFiltro === 'pendiente' && estadoOrden !== 'pendiente') return false;
+            if (estadoFiltro === 'cancelado' && estadoOrden !== 'cancelado') return false;
+        }
+
+        return true;
+    });
+
+    renderizarTabla();
+}
+
 // Verificar sesión al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     if (!verificarSesion()) {
@@ -271,23 +390,21 @@ document.addEventListener('DOMContentLoaded', function() {
         try { actualizarEnlacesNavbar(); } catch(e) {}
     }
 
-    // JS BÁSICO: Este script solo simula el filtro para mostrar un aspecto interactivo
-    document.getElementById('btnBuscar').addEventListener('click', () => {
-        const fecha = document.getElementById('filtroFecha').value;
-        const estado = document.getElementById('filtroEstado').value;
+    // Cargar todas las órdenes
+    cargarTodasLasOrdenes();
 
-        let mensaje = "Buscando pedidos";
-        if (fecha) {
-            mensaje += ` para la fecha ${fecha}`;
-        }
-        if (estado) {
-            if (fecha) mensaje += " y";
-            mensaje += ` con estado "${estado}"`;
-        }
-        
-        // Simulación visual: Solo muestra el mensaje de búsqueda en la consola
-        console.log(mensaje);
-        alert(`${mensaje}. (Lógica de filtrado avanzada no implementada en este demo.)`);
+    // Configurar filtros
+    document.getElementById('btnBuscar').addEventListener('click', () => {
+        aplicarFiltros();
+    });
+
+    // Aplicar filtros al presionar Enter en los campos
+    document.getElementById('filtroFecha').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') aplicarFiltros();
+    });
+
+    document.getElementById('filtroEstado').addEventListener('change', () => {
+        aplicarFiltros();
     });
 }); // Cierre del DOMContentLoaded
 </script>

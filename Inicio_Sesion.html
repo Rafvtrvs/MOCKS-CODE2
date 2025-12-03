@@ -233,27 +233,66 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById("recuerdame").checked = true;
     }
 
-    // Simular recuperación de contraseña
+    // Solicitar recuperación de contraseña
     const forgot = document.getElementById('forgotLink');
     if (forgot) {
-        forgot.addEventListener('click', function(e) {
+        forgot.addEventListener('click', async function(e) {
             e.preventDefault();
             const emailInput = document.getElementById('email');
             const email = (emailInput && emailInput.value.trim()) || localStorage.getItem('usuarioEmail') || '';
             const successDiv = document.getElementById('success');
             const errorDiv = document.getElementById('error');
+            
             if (errorDiv) errorDiv.textContent = '';
+            if (successDiv) successDiv.textContent = '';
+            
             if (!email) {
-                if (successDiv) successDiv.textContent = '';
                 alert('Ingresa tu email para enviarte el enlace de recuperación.');
-                emailInput && emailInput.focus();
+                if (emailInput) emailInput.focus();
                 return;
             }
-            const msg = `📧 Se envió una solicitud de recuperación a ${email}. Revisa tu correo.`;
-            if (successDiv) {
-                successDiv.textContent = msg;
-            } else {
-                alert(msg);
+            
+            try {
+                const response = await fetch("http://127.0.0.1:8000/usuarios/solicitar-cambio-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ correo: email })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let mensaje = `📧 ${result.mensaje}`;
+                    
+                    // En desarrollo, mostrar el link simulado
+                    if (result.link_simulado) {
+                        mensaje += `\n\n🔗 Link de desarrollo: ${result.link_simulado}`;
+                        mensaje += `\n(En producción, este link se enviaría por email)`;
+                        console.log("Token simulado:", result.token_simulado);
+                        console.log("Link simulado:", result.link_simulado);
+                    }
+                    
+                    if (successDiv) {
+                        successDiv.textContent = mensaje;
+                    } else {
+                        alert(mensaje);
+                    }
+                } else {
+                    const errorMsg = result.detail || "Error al solicitar recuperación";
+                    if (errorDiv) {
+                        errorDiv.textContent = errorMsg;
+                    } else {
+                        alert(errorMsg);
+                    }
+                }
+            } catch (error) {
+                console.error("Error al solicitar recuperación:", error);
+                const errorMsg = "Error al solicitar recuperación. Verifica que el backend esté corriendo.";
+                if (errorDiv) {
+                    errorDiv.textContent = errorMsg;
+                } else {
+                    alert(errorMsg);
+                }
             }
         });
     }
